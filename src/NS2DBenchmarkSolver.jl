@@ -1,5 +1,6 @@
 module NS2DBenchmarkSolver
 
-# Write your package code here.
+export sum_values
+include("sum_values.jl")
 
 end
