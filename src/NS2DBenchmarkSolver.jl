@@ -1,6 +1,9 @@
 module NS2DBenchmarkSolver
 
-export sum_values
-include("sum_values.jl")
+using LinearAlgebra
+
+export chebychev
+
+include("chebychev.jl")
 
 end

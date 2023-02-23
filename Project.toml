@@ -3,6 +3,9 @@ uuid = "81d71bd7-5196-4e79-91c4-f38e47c336fb"
 authors = ["Moritz Waldleben <moritz.waldleben@gmail.com> and contributors"]
 version = "0.1.0"
 
+[deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+
 [compat]
 julia = "1"
 
