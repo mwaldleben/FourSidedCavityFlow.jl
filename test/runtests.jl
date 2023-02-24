@@ -1,14 +1,10 @@
 using NS2DBenchmarkSolver
 using Test
 
-@testset "chebychev.jl" begin
-    N = 0
-    D = [0] 
-    x = [1.] 
-    @test NS2DBenchmarkSolver.chebychev(N) == (D, x)
-
-    N = 2
-    D = [1.5 -2.0 0.5; 0.5 0.0 -0.5; -0.5 2.0 -1.5]
-    x = [1.0; 0.0; -1.0]
-    @test NS2DBenchmarkSolver.chebychev(N) .≈ (D, x)
+@testset "diff.jl" begin
+    n = 2
+    Dₓ = [-1.5 2.0 -0.5; -0.5 0.0 0.5; 0.5 -2.0 1.5]
+    x = [-1; 0; 1]
+    @test NS2DBenchmarkSolver.diffcheb(n)[1] ≈ x 
+    @test NS2DBenchmarkSolver.diffcheb(n)[2] ≈ Dₓ 
 end

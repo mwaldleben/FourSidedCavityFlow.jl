@@ -2,8 +2,8 @@ module NS2DBenchmarkSolver
 
 using LinearAlgebra
 
-export chebychev
+export diffcheb
 
-include("chebychev.jl")
+include("diff.jl")
 
 end
