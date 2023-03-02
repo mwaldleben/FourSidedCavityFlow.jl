@@ -2,8 +2,11 @@ module NS2DBenchmarkSolver
 
 using LinearAlgebra
 
-export diffcheb
+include("differentiation.jl")
+include("boundarycondition.jl")
+include("solution.jl")
 
-include("diff.jl")
+include("spectralmesh.jl")
+include("spectralproblem.jl")
 
 end
