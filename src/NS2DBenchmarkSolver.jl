@@ -5,6 +5,7 @@ using LinearAlgebra
 include("typedefs.jl")
 include("differentiation.jl")
 include("boundarycondition.jl")
+include("solve.jl")
 include("spectralmesh.jl")
 include("spectralproblem.jl")
 include("solution.jl")
@@ -18,6 +19,7 @@ export SpectralMesh1D
 export SpectralMesh2D
 export ExamplePoisson1D
 export Cavity4Sided
-export applyBC2D
+export setBC2D
+export solve
 
 end

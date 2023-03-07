@@ -29,3 +29,11 @@ function applyBC2D(probl::Cavity4Sided, bcxmin::BCNeumann2D, bcxmax::BCNeumann2D
 
     probl.psiinit = Ψ
 end
+
+
+function setBC2D(probl::Cavity4Sided, bcxmin::BCNeumann2D, bcxmax::BCNeumann2D, bcymin::BCNeumann2D, bcymax::BCNeumann2D; initialΨval=0)
+    probl.bcxmin = bcxmin
+    probl.bcxmax = bcxmax
+    probl.bcymin = bcymin
+    probl.bcymax = bcymax
+end

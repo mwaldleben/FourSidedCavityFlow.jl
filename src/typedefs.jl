@@ -75,7 +75,11 @@ end
 # Lid-driven 4 sided cavity flow problem 
 mutable struct Cavity4Sided <: SpectralProblem
     mesh::SpectralMesh2D
-    psiinit::Matrix
+    bcxmin::BCNeumann2D
+    bcxmax::BCNeumann2D
+    bcymin::BCNeumann2D
+    bcymax::BCNeumann2D
+    reynolds::Real
 end
 
 
@@ -83,8 +87,17 @@ end
 
 abstract type Solution end
 
-struct Solution1D <: Solution 
+struct Solution1D <: Solution
     nodes::Vector
     vals::Vector
+end
+
+struct Solution2D <: Solution
+    xnodes::Vector
+    ynodes::Vector
+    vals::Matrix
+    isconverged::Bool
+    tol::Real
+    iter::Integer
 end
 

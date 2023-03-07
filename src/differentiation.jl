@@ -5,7 +5,7 @@ Compute the Chebyshev differentiation matrix with `n`+1 points in the
 interval `span` which defaults to [-1. 1]. Returns a vector of nodes 
 and the matrices for the first, second and fourth derivatives.
 """
-function diffchebychev(n::Int, span=(-1, 1))
+function diffchebychev(n::Int; span=(-1, 1))
     # Define nodes in [-1,1]
     x = [ -cos(k*π/n) for k in 0:n ]    
 
