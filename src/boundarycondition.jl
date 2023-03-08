@@ -15,25 +15,16 @@ function BCNeumann2D(nodes, bcfunc::Function)
     return BCNeumann2D(vals)
 end
 
-function applyBC2D(probl::Cavity4Sided, bcxmin::BCNeumann2D, bcxmax::BCNeumann2D, bcymin::BCNeumann2D, bcymax::BCNeumann2D; initialΨval=0)
-    nx = probl.mesh.xnbcells
-    ny = probl.mesh.ynbcells 
-    Dx1 = probl.mesh.diffx1mat
-    Dy1 = probl.mesh.diffy1mat
-
-    # Fill interior from initial value of Ψ
-    Ψ = fillΨint(nx, ny; initialΨval)
-    
-    # Construct Ψ at the boundary 
-    Ψ = constructΨboundary(Ψ, Dx1, Dy1, bcxmin, bcxmax, bcymin, bcymax)
-
-    probl.psiinit = Ψ
-end
-
-
-function setBC2D(probl::Cavity4Sided, bcxmin::BCNeumann2D, bcxmax::BCNeumann2D, bcymin::BCNeumann2D, bcymax::BCNeumann2D; initialΨval=0)
+function setBC2D(probl::Cavity4Sided, bcxmin::BCNeumann2D, bcxmax::BCNeumann2D, bcymin::BCNeumann2D, bcymax::BCNeumann2D)
     probl.bcxmin = bcxmin
     probl.bcxmax = bcxmax
     probl.bcymin = bcymin
     probl.bcymax = bcymax
+end
+
+function setBC2D(probl::Cavity4Sided, bcxmin::Function, bcxmax::Function, bcymin::Function, bcymax::Function)
+    probl.bcxmin = BCNeumann2D(bcxmin(probl.mesh.ynodes))
+    probl.bcxmax = BCNeumann2D(bcxmax(probl.mesh.ynodes))
+    probl.bcymin = BCNeumann2D(bcymin(probl.mesh.xnodes))
+    probl.bcymax = BCNeumann2D(bcymax(probl.mesh.xnodes))
 end

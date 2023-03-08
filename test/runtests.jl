@@ -74,8 +74,6 @@ end
         @test mesh.spectralmethod == "chebychev"
     end
 end
-@testset "boundarycondition.jl" begin
-end
 @testset "solve.jl" begin
     @testset "jacobian" begin
         func(x) = @. x^2
