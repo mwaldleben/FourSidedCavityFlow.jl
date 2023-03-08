@@ -1,4 +1,4 @@
-function solve(probl::Cavity4Sided; tol::Real=1e-8, maxiter::Integer=100)solve
+function solve(probl::Cavity4Sided; tol::Real=1e-8, maxiter::Integer=100)
     nx = probl.mesh.xnbcells
     ny = probl.mesh.ynbcells
     Dx1 = probl.mesh.diffx1mat
