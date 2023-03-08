@@ -21,5 +21,6 @@ export ExamplePoisson1D
 export Cavity4Sided
 export setBC2D
 export solve
+export print 
 
 end
