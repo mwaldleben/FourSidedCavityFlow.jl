@@ -57,3 +57,30 @@ function constructΨboundary(Ψint, Dx1, Dy1, bcxmin::BCNeumann2D, bcxmax::BCNeu
 
     return Ψ
 end
+
+function calculateinitialguess(probl::Cavity4Sided; Δt=1, nbtimesteps=200)
+    nx = probl.mesh.xnbcells
+    ny = probl.mesh.ynbcells
+    bcxmin = probl.bcxmin
+    bcxmax = probl.bcxmax
+    bcymin = probl.bcymin
+    bcymax = probl.bcymax
+
+    # First guess 
+    # Ψ = zeros((probl.mesh.xnbcells+1),(probl.mesh.ynbcells+1))
+    Ψold = 1e-3*randn((nx+1),(nx+1))
+
+    # Progress in time to get closer to a stable solution
+    for step in 1:nbtimesteps
+        # Function with implicit Euler to do one time step
+        function ftimestep(ψint) 
+            return rhstime(probl, Δt, Ψold, ψint)
+        end
+        ψintold = vec(Ψold[3:nx-1, 3:ny-1])
+        ψint, _, _, _ = newton(ftimestep, ψintold)
+
+        Ψint = reshape(ψint, (nx-3,nx-3))
+        Ψold = NS2DBenchmarkSolver.constructΨboundary(Ψint, probl.mesh.diffx1mat, probl.mesh.diffy1mat, bcxmin, bcxmax, bcymin, bcymax)
+    end
+    return Ψold
+end
