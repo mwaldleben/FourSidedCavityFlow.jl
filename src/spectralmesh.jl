@@ -1,20 +1,30 @@
-function SpectralMesh1D(nbcells, span, spectralmethod="chebychev")
-    nodes, diff1mat, diff2mat, diff4mat  = diffchebychev(nbcells, span=span)
+function SpectralMesh1D(n::Int, length::Real)
+    nodes, diff1, diff2, diff4  = diffchebychev(n, length=length)
 
-    return SpectralMesh1D(nbcells, span[1], span[2], nodes, diff1mat, diff2mat, diff4mat, spectralmethod)
+    return SpectralMesh1D(n, length, nodes, diff1, diff2, diff4)
 end
 
-function SpectralMesh2D(nbcells, xspan, yspan, spectralmethod="chebychev")
-    xnodes, diffx1mat, diffx2mat, diffx4mat  = diffchebychev(nbcells[1], span=xspan)
-    ynodes, diffy1mat, diffy2mat, diffy4mat  = diffchebychev(nbcells[2], span=xspan)
+function SpectralMesh1D(n::Int)
+    length = 1
 
-    return SpectralMesh2D(nbcells[1], nbcells[2], xspan[1], xspan[2], yspan[1], yspan[2], xnodes, ynodes, diffx1mat, diffx2mat, diffx4mat, diffy1mat, diffy2mat, diffy4mat, spectralmethod)
+    nodes, diff1, diff2, diff4  = diffchebychev(n)
+
+    return SpectralMesh1D(n, length, nodes, diff1, diff2, diff4)
 end
 
-function SpectralMesh2D(nbcells)
-    xnodes, diffx1mat, diffx2mat, diffx4mat  = diffchebychev(nbcells[1])
-    ynodes, diffy1mat, diffy2mat, diffy4mat  = diffchebychev(nbcells[2])
-    spectralmethod = "chebychev"
+function SpectralMesh2D(nx::Int, ny::Int, lengthx::Real, lengthy::Real)
+    nodesx, diffx1, diffx2, diffx4  = diffchebychev(nx, length=lengthx)
+    nodesy, diffy1, diffy2, diffy4  = diffchebychev(ny, length=lengthy)
 
-    return SpectralMesh2D(nbcells[1], nbcells[2], -1, 1, -1, 1, xnodes, ynodes, diffx1mat, diffx2mat, diffx4mat, diffy1mat, diffy2mat, diffy4mat, spectralmethod)
+    return SpectralMesh2D(nx, ny, lengthx, lengthy, nodesx, nodesy, diffx1, diffx2, diffx4, diffy1, diffy2, diffy4)
+end
+
+function SpectralMesh2D(n::Tuple{Int, Int})
+    lengthx = 1
+    lengthy = 1
+
+    nodesx, diffx1, diffx2, diffx4  = diffchebychev(n[1])
+    nodesy, diffy1, diffy2, diffy4  = diffchebychev(n[2])
+
+    return SpectralMesh2D(n[1], n[2], lengthx, lengthy, nodesx, nodesy, diffx1, diffx2, diffx4, diffy1, diffy2, diffy4)
 end

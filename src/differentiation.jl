@@ -1,13 +1,13 @@
 """
-    diffchebychev(n, span)
+    diffchebychev(n, length)
 
 Compute the Chebyshev differentiation matrix with `n`+1 points in the
-interval `span` which defaults to [-1. 1]. Returns a vector of nodes 
+interval [length, -length] which defaults to [1, -1]. Returns a vector of nodes 
 and the matrices for the first, second and fourth derivatives.
 """
-function diffchebychev(n::Int; span=(-1, 1))
-    # Define nodes in [-1,1]
-    x = [ -cos(k*π/n) for k in 0:n ]    
+function diffchebychev(n::Int; length=1::Real)
+    # Define nodes in [1, -1]
+    x = [ cos(k*π/n) for k in 0:n ]    
 
     # Off-diagonal entries
     c = [2; ones(n-1); 2];
@@ -20,9 +20,10 @@ function diffchebychev(n::Int; span=(-1, 1))
     Dx1 -= diagm(s[:,1])
 
     # Change interval if necessary
-    if span[1] ≠ -1 && span[2] ≠ 1 
-        a,b = span
-        x = @. a + (b-a)*(x+1)/2
+    if length ≠ 1 
+        a = length/2
+        b = -length/2
+        x = @. a + (b-a)*(x-1)/2
         Dx1 = 2*Dx1/(b-a)
     end
 

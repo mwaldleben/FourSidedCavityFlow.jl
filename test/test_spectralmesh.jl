@@ -1,29 +1,24 @@
 @testset "spectralmesh.jl" begin
     @testset "SpectralMesh1D" begin
-        nbcells = 2
-        span = (-1, 1)
-        Dx1ref = [-1.5 2.0 -0.5; -0.5 0.0 0.5; 0.5 -2.0 1.5]
-        xref = [-1; 0; 1]
+        n = 2
+        D1ref = [1.5 -2.0 0.5; 0.5 0.0 -0.5; -0.5 2.0 -1.5]
+        nodesref = [1; 0; -1]
 
-        mesh = SpectralMesh1D(nbcells, span)
+        mesh = SpectralMesh1D(n)
 
-        @test mesh.nodes ≈ xref
-        @test mesh.diff1mat ≈ Dx1ref
-        @test mesh.spectralmethod == "chebychev"
+        @test mesh.nodes ≈ nodesref
+        @test mesh.diff1 ≈ D1ref
     end
     @testset "SpectralMesh2D" begin
-        nbcells = (2, 2)
-        xspan = (-1, 1)
-        yspan = (-1, 1)
-        Dx1ref = [-1.5 2.0 -0.5; -0.5 0.0 0.5; 0.5 -2.0 1.5]
-        xref = [-1; 0; 1]
+        n = (2, 2)
+        D1ref = [1.5 -2.0 0.5; 0.5 0.0 -0.5; -0.5 2.0 -1.5]
+        nodesref = [1; 0; -1]
 
-        mesh = SpectralMesh2D(nbcells, xspan, yspan)
+        mesh = SpectralMesh2D(n)
 
-        @test mesh.xnodes ≈ xref
-        @test mesh.ynodes ≈ xref
-        @test mesh.diffx1mat ≈ Dx1ref
-        @test mesh.diffy1mat ≈ Dx1ref
-        @test mesh.spectralmethod == "chebychev"
+        @test mesh.xnodes ≈ nodesref
+        @test mesh.ynodes ≈ nodesref
+        @test mesh.diffx1 ≈ D1ref
+        @test mesh.diffy1 ≈ D1ref
     end
 end

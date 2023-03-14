@@ -3,32 +3,27 @@
 abstract type SpectralMesh end
 
 struct SpectralMesh1D <: SpectralMesh
-    nbcells::Int
-    min::Real
-    max::Real
+    n::Int
+    length::Real
     nodes::Vector
-    diff1mat::Matrix
-    diff2mat::Matrix
-    diff4mat::Matrix
-    spectralmethod::String
+    diff1::Matrix
+    diff2::Matrix
+    diff4::Matrix
 end
 
 struct SpectralMesh2D <: SpectralMesh
-    xnbcells::Int
-    ynbcells::Int
-    xmin::Real
-    xmax::Real
-    ymin::Real
-    ymax::Real
+    nx::Int
+    ny::Int
+    lengthx::Real
+    lengthy::Real
     xnodes::Vector
     ynodes::Vector
-    diffx1mat::Matrix
-    diffx2mat::Matrix
-    diffx4mat::Matrix
-    diffy1mat::Matrix
-    diffy2mat::Matrix
-    diffy4mat::Matrix
-    spectralmethod::String
+    diffx1::Matrix
+    diffx2::Matrix
+    diffx4::Matrix
+    diffy1::Matrix
+    diffy2::Matrix
+    diffy4::Matrix
 end
 
 
@@ -64,7 +59,7 @@ abstract type SpectralProblem end
 # Solve linear 1D BVP with Dirichlet or Neumann boundary conditions
 # Example: u_xx = f(x) 
 # Corresponding Matlab code, Program 13 and 33 in Trefethen
-mutable struct ExamplePoisson1D <: SpectralProblem
+mutable struct Example1D <: SpectralProblem
     mesh::SpectralMesh1D
     diff2matBC::Matrix
     fBC::Vector

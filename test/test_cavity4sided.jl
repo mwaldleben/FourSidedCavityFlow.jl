@@ -1,12 +1,11 @@
 @testset "Cavity4Sided" begin
-    @testset "Functions" begin
+    @testset "Cavity4Sided methods" begin
         # Test constructBChelpermat function
         #nodes = [1; 1/2; -1/2; -1] 
         D = [19/6 -4 4/3 -1/2; 1 -1/3 -1 1/3; -1/3 1 1/3 -1; 1/2 -4/3 4 -19/6]
 
         Minvref = [-9 3; -3 9]/32
         Minv = NS2DBenchmarkSolver.constructBChelpermat(D)
-
         @test Minv ≈ Minvref
 
         # Test boundary reconstruction Ψ when imposing derivatives at boundary
@@ -14,31 +13,29 @@
         DΨxfunc(x, y) = @. π/2 * cos(π*(x-1)/2) * sin(π*(y-1)/2) 
         DΨyfunc(x, y) = @. π/2 * sin(π*(x-1)/2) * cos(π*(y-1)/2) 
 
-        n = 8
-        mesh = SpectralMesh2D((n, n))
+        n = (8, 8)
+        mesh = SpectralMesh2D(n)
         Ψexact = [Ψfunc(x,y) for x in mesh.xnodes, y in mesh.ynodes] 
 
-        Ψbcxmin(y) = DΨxfunc(-1, y)
-        Ψbcxmax(y) = DΨxfunc(1, y)
-        Ψbcymin(x) = DΨyfunc(x, -1)
-        Ψbcymax(x) = DΨyfunc(x, 1)
+        Ψbcxmin(y) = DΨxfunc(1, y)
+        Ψbcxmax(y) = DΨxfunc(-1, y)
+        Ψbcymin(x) = DΨyfunc(x, 1)
+        Ψbcymax(x) = DΨyfunc(x, -1)
 
         bcxmin = BCNeumann2D(Ψbcxmin(mesh.ynodes))
         bcxmax = BCNeumann2D(Ψbcxmax(mesh.ynodes))
         bcymin = BCNeumann2D(Ψbcymin(mesh.xnodes))
         bcymax = BCNeumann2D(Ψbcymax(mesh.xnodes))
 
-        Ψint = Ψexact[3:n-1,3:n-1]  
-        Ψ = NS2DBenchmarkSolver.constructΨboundary(Ψint, mesh.diffx1mat, mesh.diffy1mat, bcxmin, bcxmax, bcymin, bcymax)
+        Ψint = Ψexact[3:n[1]-1, 3:n[2]-1]
+        Ψ = NS2DBenchmarkSolver.constructΨboundary(Ψint, mesh.diffx1, mesh.diffy1, bcxmin, bcxmax, bcymin, bcymax)
+
         @test Ψ ≈ Ψexact atol=1e-6
 
         # Test right-hand-side function of equation for streamfunction 
         # in cavity flow
-        n = 6
-        nbcells = (n, n)
-        xspan = (1, -1)
-        yspan = (1, -1)
-        mesh = SpectralMesh2D(nbcells, xspan, yspan)
+        n = (6, 6)
+        mesh = SpectralMesh2D(n)
 
         reynolds = 100
         probl = Cavity4Sided(mesh, reynolds)
@@ -53,9 +50,9 @@
 
         setBC2D(probl, bcxmin, bcxmax, bcymin, bcymax)
 
-        Ψint = zeros((n-3, n-3))
+        Ψint = zeros((n[1]-3, n[2]-3))
 
-        Ψ = NS2DBenchmarkSolver.constructΨboundary(Ψint, probl.mesh.diffx1mat, probl.mesh.diffy1mat, bcxmin, bcxmax, bcymin, bcymax)
+        Ψ = NS2DBenchmarkSolver.constructΨboundary(Ψint, probl.mesh.diffx1, probl.mesh.diffy1, bcxmin, bcxmax, bcymin, bcymax)
 
         FΨ = NS2DBenchmarkSolver.rhs(probl, Ψint)
         FΨref = [-0.0624820681282460, 0.576027334953858, 0.245807608047586, -0.642691167651798, 0.0121206968541711, -0.642691167651798, 0.245807608047580, 0.576027334953857, -0.0624820681282459]
@@ -63,8 +60,8 @@
 
         # Test right-hand-side function with time stepping of equation for streamfunction 
         # in cavity flow
-        ψint = ones((n-3)*(n-3))
-        Ψold = ones((n+1, n+1))
+        ψint = ones((n[1]-3)*(n[2]-3))
+        Ψold = ones((n[1]+1, n[2]+1))
         Δt = 1
 
         FΨ = NS2DBenchmarkSolver.rhstime(probl, Δt, Ψold, ψint)
@@ -84,26 +81,24 @@
     end
 
     @testset "Setup and solve problem" begin
-        nbcells = (4, 4)
-        xspan = (1, -1)
-        yspan = (1, -1)
+        n = (4, 4)
 
         nodes = [1; 0.707106781186548; 0; -0.707106781186548; -1]
-        D = [5.5 -6.82842712474619 2  -1.17157287525381 0.5
-             1.70710678118655 -0.707106781186548 -1.41421356237310 0.707106781186548 -0.292893218813453
-             -0.5 1.41421356237310 0 -1.41421356237310 0.5
-             0.292893218813453 -0.707106781186548 1.41421356237310 0.707106781186548 -1.70710678118655
-             -0.5 1.17157287525381 -2 6.82842712474619 -5.5]
+        D1 = [5.5 -6.82842712474619 2  -1.17157287525381 0.5
+              1.70710678118655 -0.707106781186548 -1.41421356237310 0.707106781186548 -0.292893218813453
+              -0.5 1.41421356237310 0 -1.41421356237310 0.5
+              0.292893218813453 -0.707106781186548 1.41421356237310 0.707106781186548 -1.70710678118655
+              -0.5 1.17157287525381 -2 6.82842712474619 -5.5]
 
-        mesh = SpectralMesh2D(nbcells, xspan, yspan)
+        mesh = SpectralMesh2D(n)
 
         reynolds = 500
         probl = Cavity4Sided(mesh, reynolds)
 
         @test probl.mesh.xnodes ≈ nodes
         @test probl.mesh.ynodes ≈ nodes
-        @test probl.mesh.diffx1mat ≈ D
-        @test probl.mesh.diffy1mat ≈ D
+        @test probl.mesh.diffx1 ≈ D1
+        @test probl.mesh.diffy1 ≈ D1
 
         # Test boundary construction 
         k0 =10
@@ -122,8 +117,8 @@
                  0 0.0807493117423043 0.124977301580937 0.0807493117423042 0
                  0 0 0 0 0]
 
-        Ψint = zeros((probl.mesh.xnbcells-3, probl.mesh.ynbcells-3))
-        Ψ = NS2DBenchmarkSolver.constructΨboundary(Ψint, mesh.diffx1mat, mesh.diffy1mat, bcxmin, bcxmax, bcymin, bcymax)
+        Ψint = zeros((probl.mesh.nx-3, probl.mesh.ny-3))
+        Ψ = NS2DBenchmarkSolver.constructΨboundary(Ψint, mesh.diffx1, mesh.diffy1, bcxmin, bcxmax, bcymin, bcymax)
         @test Ψ ≈ Ψref
 
         # Test solve 

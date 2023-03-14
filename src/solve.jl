@@ -1,8 +1,19 @@
+function solve(probl::Example1D)
+    u = probl.diff2matBC \ probl.fBC
+
+    if typeof(probl.bcmin) == BCDirichlet1D && typeof(probl.bcmax) == BCDirichlet1D 
+        u = [0; u; 0]
+    end
+
+    sol = Solution1D(probl.mesh.nodes, u)
+    return  sol
+end
+
 function solve(probl::Cavity4Sided, Ψinit::Matrix; tol::Real=1e-12, maxiter::Integer=100)
-    nx = probl.mesh.xnbcells
-    ny = probl.mesh.ynbcells
-    Dx1 = probl.mesh.diffx1mat
-    Dy1 = probl.mesh.diffy1mat
+    nx = probl.mesh.nx
+    ny = probl.mesh.ny
+    Dx1 = probl.mesh.diffx1
+    Dy1 = probl.mesh.diffy1
     bcxmin = probl.bcxmin
     bcxmax = probl.bcxmax
     bcymin = probl.bcymin
@@ -11,7 +22,6 @@ function solve(probl::Cavity4Sided, Ψinit::Matrix; tol::Real=1e-12, maxiter::In
     ψinit = vec(Ψinit[3:nx-1, 3:ny-1])
 
     # Solve stationary equation using newton-raphson
-    
     function fnewton(ψint) 
        return rhs(probl, ψint)
     end
@@ -27,20 +37,20 @@ function solve(probl::Cavity4Sided, Ψinit::Matrix; tol::Real=1e-12, maxiter::In
 end
 
 function solve(probl::Cavity4Sided; tol::Real=1e-12, maxiter::Integer=100)
-    Ψinit = zeros((probl.mesh.xnbcells+1),(probl.mesh.ynbcells+1))
+    Ψinit = zeros((probl.mesh.nx+1),(probl.mesh.ny+1))
 
     return solve(probl, Ψinit; tol=tol, maxiter=maxiter)
 end
 
 function rhs(probl::Cavity4Sided, ψint)
-    nx = probl.mesh.xnbcells
-    ny = probl.mesh.ynbcells
-    Dx1 = probl.mesh.diffx1mat
-    Dy1 = probl.mesh.diffy1mat
-    Dx2 = probl.mesh.diffx2mat
-    Dy2 = probl.mesh.diffy2mat
-    Dx4 = probl.mesh.diffx4mat
-    Dy4 = probl.mesh.diffy4mat
+    nx = probl.mesh.nx
+    ny = probl.mesh.ny
+    Dx1 = probl.mesh.diffx1
+    Dy1 = probl.mesh.diffy1
+    Dx2 = probl.mesh.diffx2
+    Dy2 = probl.mesh.diffy2
+    Dx4 = probl.mesh.diffx4
+    Dy4 = probl.mesh.diffy4
     bcxmin = probl.bcxmin
     bcxmax = probl.bcxmax
     bcymin = probl.bcymin
@@ -60,14 +70,14 @@ function rhs(probl::Cavity4Sided, ψint)
 end
 
 function rhstime(probl::Cavity4Sided, Δt::Real, Ψold::Matrix, ψint::Vector)
-    nx = probl.mesh.xnbcells
-    ny = probl.mesh.ynbcells
-    Dx1 = probl.mesh.diffx1mat
-    Dy1 = probl.mesh.diffy1mat
-    Dx2 = probl.mesh.diffx2mat
-    Dy2 = probl.mesh.diffy2mat
-    Dx4 = probl.mesh.diffx4mat
-    Dy4 = probl.mesh.diffy4mat
+    nx = probl.mesh.nx
+    ny = probl.mesh.ny
+    Dx1 = probl.mesh.diffx1
+    Dy1 = probl.mesh.diffy1
+    Dx2 = probl.mesh.diffx2
+    Dy2 = probl.mesh.diffy2
+    Dx4 = probl.mesh.diffx4
+    Dy4 = probl.mesh.diffy4
     bcxmin = probl.bcxmin
     bcxmax = probl.bcxmax
     bcymin = probl.bcymin

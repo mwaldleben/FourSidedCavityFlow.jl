@@ -17,7 +17,7 @@ export BCNeumann2D
 export Solution1D
 export SpectralMesh1D
 export SpectralMesh2D
-export ExamplePoisson1D
+export Example1D
 export Cavity4Sided
 export setBC2D
 export solve

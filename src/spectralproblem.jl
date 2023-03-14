@@ -1,27 +1,16 @@
-function ExamplePoisson1D(mesh::SpectralMesh1D, func::Function, (bcmin, bcmax))
-    Dx2  = mesh.diff2mat
+function Example1D(mesh::SpectralMesh1D, func::Function, (bcmin, bcmax))
+    Dx2  = mesh.diff2
     f = func.(mesh.nodes)
     Dx2, f = applyBC1D(Dx2, f, bcmin, bcmax)
-    return ExamplePoisson1D(mesh, Dx2, f, bcmin, bcmax)
-end
-
-function solve(probl::ExamplePoisson1D)
-    u = probl.diff2matBC \ probl.fBC
-
-    if typeof(probl.bcmin) == BCDirichlet1D && typeof(probl.bcmax) == BCDirichlet1D 
-        u = [0; u; 0]
-    end
-
-    sol = Solution1D(probl.mesh.nodes, u)
-    return  sol
+    return Example1D(mesh, Dx2, f, bcmin, bcmax)
 end
 
 function Cavity4Sided(mesh::SpectralMesh2D, reynolds)
     # Boundary conditions on the 2D sides default to zero
-    bcxmin = BCNeumann2D(zeros(mesh.ynbcells+1))
-    bcxmax = BCNeumann2D(zeros(mesh.ynbcells+1))
-    bcymin = BCNeumann2D(zeros(mesh.xnbcells+1))
-    bcymax = BCNeumann2D(zeros(mesh.xnbcells+1))
+    bcxmin = BCNeumann2D(zeros(mesh.ny+1))
+    bcxmax = BCNeumann2D(zeros(mesh.ny+1))
+    bcymin = BCNeumann2D(zeros(mesh.nx+1))
+    bcymax = BCNeumann2D(zeros(mesh.nx+1))
 
     Cavity4Sided(mesh, bcxmin, bcxmax, bcymin, bcymax, reynolds)
 end
@@ -59,8 +48,8 @@ function constructΨboundary(Ψint, Dx1, Dy1, bcxmin::BCNeumann2D, bcxmax::BCNeu
 end
 
 function calculateinitialguess(probl::Cavity4Sided; Δt=1, nbtimesteps=200)
-    nx = probl.mesh.xnbcells
-    ny = probl.mesh.ynbcells
+    nx = probl.mesh.nx
+    ny = probl.mesh.ny
     bcxmin = probl.bcxmin
     bcxmax = probl.bcxmax
     bcymin = probl.bcymin
@@ -71,7 +60,7 @@ function calculateinitialguess(probl::Cavity4Sided; Δt=1, nbtimesteps=200)
     Ψold = 1e-3*randn((nx+1),(nx+1))
 
     # Progress in time to get closer to a stable solution
-    for step in 1:nbtimesteps
+    for _ in 1:nbtimesteps
         # Function with implicit Euler to do one time step
         function ftimestep(ψint) 
             return rhstime(probl, Δt, Ψold, ψint)
@@ -80,7 +69,7 @@ function calculateinitialguess(probl::Cavity4Sided; Δt=1, nbtimesteps=200)
         ψint, _, _, _ = newton(ftimestep, ψintold)
 
         Ψint = reshape(ψint, (nx-3,nx-3))
-        Ψold = NS2DBenchmarkSolver.constructΨboundary(Ψint, probl.mesh.diffx1mat, probl.mesh.diffy1mat, bcxmin, bcxmax, bcymin, bcymax)
+        Ψold = NS2DBenchmarkSolver.constructΨboundary(Ψint, probl.mesh.diffx1, probl.mesh.diffy1, bcxmin, bcxmax, bcymin, bcymax)
     end
     return Ψold
 end
