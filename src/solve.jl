@@ -1,92 +1,96 @@
-function solve(probl::Cavity4Sided, Ψinit::Matrix; tol::Real=1e-12, maxiter::Integer=100)
-    nx = probl.mesh.xnbcells
-    ny = probl.mesh.ynbcells
-    Dx1 = probl.mesh.diffx1mat
-    Dy1 = probl.mesh.diffy1mat
-    bcxmin = probl.bcxmin
-    bcxmax = probl.bcxmax
-    bcymin = probl.bcymin
-    bcymax = probl.bcymax
+function solve(probl::Example1D)
+    n = probl.mesh.n
+    D2 = probl.mesh.diff2
+    rhs = probl.rhs
 
-    ψinit = vec(Ψinit[3:nx-1, 3:ny-1])
+    # Apply boundary conditions (Dirichlet),
+    # is fixed for this example problem
+    A = D2[2:n, 2:n]
+    b = rhs[2:n]
+
+    # Solve system
+    u = A \ b 
+
+    # Add zero boundary values to solution
+    u = [0; u; 0]
+
+    return  u
+end
+
+function solve(probl::Cavity4Sided, Ψinitial::Matrix; tolmax::Real=1e-12, maxiter::Integer=100)
+    nx = probl.mesh.nx
+    ny = probl.mesh.ny
+
+    ψi = vec(Ψinitial[3:nx-1, 3:ny-1])
 
     # Solve stationary equation using newton-raphson
-    
-    function fnewton(ψint) 
-       return rhs(probl, ψint)
+    function fnewton(ψi) 
+       return rhs(probl, ψi)
     end
-    ψint, iter, tol, isconverged = newton(fnewton, ψinit; tol=tol, maxiter=maxiter)
+    ψi, iter, tol, isconverged = newton(fnewton, ψi; tolmax=tolmax, maxiter=maxiter)
 
-    Ψint = reshape(ψint, (nx-3, ny-3))
+    Ψi = reshape(ψi, (nx-3,ny-3))
+    Ψ = constructΨ(probl, Ψi)
 
-    Ψ = constructΨboundary(Ψint, Dx1, Dy1, bcxmin, bcxmax, bcymin, bcymax)
-
-    sol = Solution2D(probl.mesh.xnodes, probl.mesh.ynodes, Ψ, isconverged, tol, iter)
-
-    return sol
+    return Ψ, iter, tol, isconverged
 end
 
-function solve(probl::Cavity4Sided; tol::Real=1e-12, maxiter::Integer=100)
-    Ψinit = zeros((probl.mesh.xnbcells+1),(probl.mesh.ynbcells+1))
+function solve(probl::Cavity4Sided; tolmax::Real=1e-12, maxiter::Integer=100)
+    nx = probl.mesh.nx
+    ny = probl.mesh.ny
 
-    return solve(probl, Ψinit; tol=tol, maxiter=maxiter)
+    Ψi = zeros((nx+1),(ny+1))
+
+    return solve(probl, Ψi; tolmax=tolmax, maxiter=maxiter)
 end
 
-function rhs(probl::Cavity4Sided, ψint)
-    nx = probl.mesh.xnbcells
-    ny = probl.mesh.ynbcells
-    Dx1 = probl.mesh.diffx1mat
-    Dy1 = probl.mesh.diffy1mat
-    Dx2 = probl.mesh.diffx2mat
-    Dy2 = probl.mesh.diffy2mat
-    Dx4 = probl.mesh.diffx4mat
-    Dy4 = probl.mesh.diffy4mat
-    bcxmin = probl.bcxmin
-    bcxmax = probl.bcxmax
-    bcymin = probl.bcymin
-    bcymax = probl.bcymax
+function rhs(probl::Cavity4Sided, ψi)
+    nx = probl.mesh.nx
+    ny = probl.mesh.ny
+    Dx1 = probl.mesh.diffx1
+    Dy1 = probl.mesh.diffy1
+    Dx2 = probl.mesh.diffx2
+    Dy2 = probl.mesh.diffy2
+    Dx4 = probl.mesh.diffx4
+    Dy4 = probl.mesh.diffy4
+    Re = probl.reynolds
 
-    Ψint = reshape(ψint, (nx-3, ny-3))
-    Ψ = constructΨboundary(Ψint, Dx1, Dy1, bcxmin, bcxmax, bcymin, bcymax)
+    Ψi = reshape(ψi, (nx-3, ny-3))
+    Ψ = constructΨ(probl, Ψi)
 
     biharmΨ = Dx4*Ψ +  Ψ*Dy4' + 2*(Dx2*Ψ)*Dy2'
     laplΨ = Dx2*Ψ + Ψ*Dy2'
     nonlinterm = (Dx1*Ψ).*(laplΨ*Dy1') - (Dx1*laplΨ).*(Ψ*Dy1')
     
-    FΨ = (1/probl.reynolds)*biharmΨ - nonlinterm
+    FΨ = (1/Re)*biharmΨ - nonlinterm
     Fψint = vec(FΨ[3:nx-1, 3:ny-1])
 
     return Fψint
 end
 
-function rhstime(probl::Cavity4Sided, Δt::Real, Ψold::Matrix, ψint::Vector)
-    nx = probl.mesh.xnbcells
-    ny = probl.mesh.ynbcells
-    Dx1 = probl.mesh.diffx1mat
-    Dy1 = probl.mesh.diffy1mat
-    Dx2 = probl.mesh.diffx2mat
-    Dy2 = probl.mesh.diffy2mat
-    Dx4 = probl.mesh.diffx4mat
-    Dy4 = probl.mesh.diffy4mat
-    bcxmin = probl.bcxmin
-    bcxmax = probl.bcxmax
-    bcymin = probl.bcymin
-    bcymax = probl.bcymax
+function rhstime(probl::Cavity4Sided, Δt::Real, Ψold::Matrix, ψi::Vector)
+    nx = probl.mesh.nx
+    ny = probl.mesh.ny
+    Dx1 = probl.mesh.diffx1
+    Dy1 = probl.mesh.diffy1
+    Dx2 = probl.mesh.diffx2
+    Dy2 = probl.mesh.diffy2
+    Dx4 = probl.mesh.diffx4
+    Dy4 = probl.mesh.diffy4
+    Re = probl.reynolds
 
-    Ψint = reshape(ψint, (nx-3, ny-3))
-    Ψ = constructΨboundary(Ψint, Dx1, Dy1, bcxmin, bcxmax, bcymin, bcymax)
+    Ψi = reshape(ψi, (nx-3, ny-3))
+    Ψ = constructΨ(probl, Ψi)
 
     Ψold = reshape(Ψold, (nx+1, ny+1))
 
     laplΨ = Dx2*Ψ + Ψ*Dy2'
-
     laplΨold = Dx2*Ψold + Ψold*Dy2'
 
     biharmΨ = Dx4*Ψ +  Ψ*Dy4' + 2*(Dx2*Ψ)*Dy2'
-
     nonlinterm = (Dx1*Ψ).*(laplΨ*Dy1') - (Dx1*laplΨ).*(Ψ*Dy1')
     
-    FΨ = (1/probl.reynolds)*biharmΨ - nonlinterm
+    FΨ = (1/Re)*biharmΨ - nonlinterm
 
     FΨ = Δt*FΨ - laplΨ + laplΨold
     Fψint = vec(FΨ[3:nx-1, 3:ny-1])
@@ -94,8 +98,8 @@ function rhstime(probl::Cavity4Sided, Δt::Real, Ψold::Matrix, ψint::Vector)
     return Fψint
 end
 
-function jacobian(x, func::Function; dx=1e-8)
-    dim = size(x,1)
+function jacobian(x::Vector, func::Function; dx=1e-8::Number)
+    dim = size(x, 1)
     J = zeros((dim, dim))
 
     Id = I(dim) * dx
@@ -109,27 +113,27 @@ function jacobian(x, func::Function; dx=1e-8)
     return J
 end
 
-function newton(func::Function, x0; tol=1e-12, maxiter=100)
+function newton(func::Function, x0::Vector; tolmax=1e-12::Number, maxiter=100::Integer)
     x = x0
 
-    i = 0
-    t = 1
-    while t>tol && i<maxiter
+    iter = 0
+    tol = 1
+    while tol>tolmax && iter<maxiter
         Fx = func(x)
         jac = jacobian(x, func)
         dx = jac \ (-Fx)
         x = x + dx        
 
-        t = norm(dx)
-        i += 1 
+        tol = norm(dx)
+        iter += 1 
     end
 
     isconverged = true
-    if i == maxiter 
+    if iter == maxiter 
         isconverged = false
-        println("Newton method did not converge in $i iterations!")
+        println("Newton method did not converge in $iter iterations!")
 
     end
 
-    return x, i, t, isconverged
+    return x, iter, tol, isconverged
 end

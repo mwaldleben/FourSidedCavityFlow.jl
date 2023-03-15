@@ -4,7 +4,7 @@ using NS2DBenchmarkSolver
 # Function implementing timestepping and creating a gif
 # of the time evolution of the streamfunction for the cavity problem
 function timestep(probl::Cavity4Sided, Ψinit, Δt, nbtimesteps)
-    plt = heatmap(
+    plt = contourf(
         xlim=(-1,1),
         ylim=(-1,1),
         title="Streamfunction Ψ on $nx x $ny",
@@ -30,22 +30,22 @@ function timestep(probl::Cavity4Sided, Ψinit, Δt, nbtimesteps)
 
     anim = @animate for step in 1:nbtimesteps
         println(step)
-        plot(heatmap!(plt, probl.mesh.xnodes, probl.mesh.ynodes, Ψold),
+        plot(contourf!(plt, reverse(probl.mesh.xnodes), reverse(probl.mesh.ynodes), Ψold'),
             scatter!(plt2, time, ψcenter, markercolor = :blue),
             layout=grid(1,2, widths=(0.5,0.5)), size=(600,300)
         )
 
-        ψint = vec(Ψold[3:nx-1, 3:ny-1])
+        ψi = vec(Ψold[3:nx-1, 3:ny-1])
 
         function ftimestep(ψint) 
             return NS2DBenchmarkSolver.rhstime(probl, Δt, Ψold, ψint)
         end
 
-        ψintold = vec(Ψold[3:nx-1, 3:ny-1])
-        ψint, _, _, _ = NS2DBenchmarkSolver.newton(ftimestep, ψintold)
+        ψiold = vec(Ψold[3:nx-1, 3:ny-1])
+        ψi, _, _, _ = NS2DBenchmarkSolver.newton(ftimestep, ψiold)
 
-        Ψint = reshape(ψint, (nx-3,nx-3))
-        Ψold = NS2DBenchmarkSolver.constructΨboundary(Ψint, probl.mesh.diffx1mat, probl.mesh.diffy1mat, probl.bcxmin, probl.bcxmax, probl.bcymin, probl.bcymax)
+        Ψi = reshape(ψi, (nx-3,nx-3))
+        Ψold = NS2DBenchmarkSolver.constructΨ(probl, Ψi)
 
         ψcenter = [Ψold[nxc, nyc]]
         time = [(Δt * step)]
@@ -63,23 +63,23 @@ mesh = SpectralMesh2D(nbcells)
 probl = Cavity4Sided(mesh, reynolds)
 
 k0 = 10
-bcfpos(x) = @. ((exp(k0 * (x - 1)) - 1) * (exp(-k0 * (x + 1)) - 1))^2
-bcfneg(x) = -bcfpos(x)
+bcfunc(x) = @. ((exp(k0*(x-1)) - 1) * (exp(-k0*(x+1)) - 1))^2
+bcfuncneg(x) = -bcfunc(x)
 
-setBC2D(probl, bcfneg, bcfpos, bcfpos, bcfneg)
+setNeumannBC2D(probl, bcfuncneg, bcfunc, bcfunc, bcfuncneg)
 
 Δt = 1
 nbtimesteps = 140
 
-nx = probl.mesh.xnbcells
-ny = probl.mesh.ynbcells
-nxc = Int(floor(probl.mesh.xnbcells/2)+1)
-nyc = Int(floor(probl.mesh.ynbcells/2)+1)
+nx = probl.mesh.nx
+ny = probl.mesh.ny
+nxc = Int(floor(nx/2)+1)
+nyc = Int(floor(ny/2)+1)
 
 # Convergence to unstable solution
 # Ψinit = zeros((nx+1),(ny+1))
 
 # Convergence to one of the two possible assymetric solutions
-Ψinit = 1e-3*randn((nx+1),(ny+1))
+Ψinitial = 1e-3*randn((nx+1),(ny+1))
 
-timestep(probl, Ψinit, Δt, nbtimesteps)
+timestep(probl, Ψinitial, Δt, nbtimesteps)
