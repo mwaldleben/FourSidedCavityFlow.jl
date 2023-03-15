@@ -72,3 +72,29 @@ function calculateΨinitial(probl::Cavity4Sided; initialguess="rand", Δt=1.::Nu
     end
     return Ψold
 end
+
+function timestep(probl::Cavity4Sided, Ψinit, Δt, nbtimesteps)
+    nx = probl.mesh.nx
+    ny = probl.mesh.ny
+
+    Ψold = Ψinit
+    time = 0
+
+    for step in 1:nbtimesteps
+        ψi = vec(Ψold[3:nx-1, 3:ny-1])
+
+        function ftimestep(ψint) 
+            return CavityFlow.rhstime(probl, Δt, Ψold, ψint)
+        end
+
+        ψiold = vec(Ψold[3:nx-1, 3:ny-1])
+        ψi, _, _, _ = CavityFlow.newton(ftimestep, ψiold)
+
+        Ψi = reshape(ψi, (nx-3,nx-3))
+        Ψold = CavityFlow.constructΨ(probl, Ψi)
+
+        time = [(Δt * step)]
+    end
+
+    return Ψold 
+end
