@@ -1,10 +1,10 @@
 # NS2DBenchmarkSolver
 
-Development of a Navier-Stokes benchmark solver using spectral methods.
-
 [![Documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://morwald.github.io/NS2DBenchmarkSolver.jl)
 [![Build Status](https://github.com/morwald/NS2DBenchmarkSolver.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/morwald/NS2DBenchmarkSolver.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coverage](https://codecov.io/gh/morwald/NS2DBenchmarkSolver.jl/branch/main/graph/badge.svg?token=ZLZMNKQSU2)](https://codecov.io/gh/morwald/NS2DBenchmarkSolver.jl)
+
+Development of a Navier-Stokes benchmark solver using spectral methods.
 
 ![cavity](./cavity.jpg)
 
@@ -20,7 +20,15 @@ moderate Reynolds numbers, thus alleviating the spatial resolution
 required to obtain accurate results.
 
 ## Installation
+
+### To try the examples
+
+The `examples` folder shows how one would go about using this module. The
+README inside the folder contains the necessary information to run the
+examples.
+
 ### For development
+
 The julia module is not yet a registered package. To work on the development
 version clone this git repository. Navigate to the root directory and start the Julia REPL. 
 ```bash
@@ -40,10 +48,6 @@ the tests and check if everything is working:
 pkg>test
 ```
 
-### Try examples 
-The `examples` folder shows how one would go about using this module. The
-README inside the folder contains the necessary information to run the
-examples. 
+## Documentation
 
-### Documentation 
 The development documention can be found [here](https://morwald.github.io/NS2DBenchmarkSolver.jl).
