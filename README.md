@@ -1,4 +1,4 @@
-# CavityFlow
+# CavityFlow.jl
 
 Development of a Navier-Stokes benchmark solver for the four-sided cavity flow
 using spectral methods. The package is designed to be extensible to other
@@ -37,7 +37,7 @@ version clone this git repository. Navigate to the root directory and start the 
 ```bash
 git clone git@github.com:morwald/CavityFlow.git
 cd CavityFlow.jl
-Julia
+julia
 ```
 
 Inside the REPL open the built-in package manager Pkg by pressing `]` and then run.
