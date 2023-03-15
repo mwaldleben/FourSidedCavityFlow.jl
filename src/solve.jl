@@ -14,15 +14,12 @@ function solve(probl::Example1D)
     # Add zero boundary values to solution
     u = [0; u; 0]
 
-    sol = Solution1D(probl.mesh.nodes, u)
-    return  sol
+    return  u
 end
 
 function solve(probl::Cavity4Sided, Ψinitial::Matrix; tolmax::Real=1e-12, maxiter::Integer=100)
     nx = probl.mesh.nx
     ny = probl.mesh.ny
-    xnodes = probl.mesh.xnodes
-    ynodes = probl.mesh.ynodes
 
     ψi = vec(Ψinitial[3:nx-1, 3:ny-1])
 
@@ -35,9 +32,7 @@ function solve(probl::Cavity4Sided, Ψinitial::Matrix; tolmax::Real=1e-12, maxit
     Ψi = reshape(ψi, (nx-3,ny-3))
     Ψ = constructΨ(probl, Ψi)
 
-    sol = Solution2D(xnodes, ynodes, Ψ, isconverged, tol, iter)
-
-    return sol
+    return Ψ, iter, tol, isconverged
 end
 
 function solve(probl::Cavity4Sided; tolmax::Real=1e-12, maxiter::Integer=100)

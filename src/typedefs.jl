@@ -49,22 +49,3 @@ mutable struct Cavity4Sided <: SpectralProblem
     bctop::Vector
     reynolds::Real
 end
-
-
-# Solution 
-
-abstract type Solution end
-
-struct Solution1D <: Solution
-    nodes::Vector
-    vals::Vector
-end
-
-struct Solution2D <: Solution
-    xnodes::Vector
-    ynodes::Vector
-    vals::Matrix
-    isconverged::Bool
-    tol::Real
-    iter::Integer
-end

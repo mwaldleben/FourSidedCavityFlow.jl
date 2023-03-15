@@ -118,7 +118,7 @@
         @test Ψ ≈ Ψref
 
         # Test solve 
-        sol = solve(probl)
+        Ψsol, iter, tol, isconverged = solve(probl)
 
         Ψsolref = [0 0 0 0 0
                    0 0.0726743805680738 0.0926775768840154 0.0726743805680738 0
@@ -126,7 +126,7 @@
                    0 0.0726743805680738 0.0926775768840155 0.0726743805680738 0
                    0 0 0 0 0]
 
-        @test sol.iter == 3
-        @test sol.vals ≈ Ψsolref
+        @test iter == 3
+        @test Ψsol ≈ Ψsolref
     end
 end

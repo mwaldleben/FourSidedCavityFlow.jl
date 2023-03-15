@@ -7,10 +7,10 @@
     func(x) = exp(4*x) 
     probl = Example1D(mesh, func) 
 
-    sol = NS2DBenchmarkSolver.solve(probl)
+    u = NS2DBenchmarkSolver.solve(probl)
 
     fexact(x) = @. (exp(4*x) - sinh(4)*x - cosh(4))/16
-    solexact = fexact(mesh.nodes)
+    uexact = fexact(mesh.nodes)
 
-    @test sol.vals ≈ solexact 
+    @test u ≈ uexact 
 end
