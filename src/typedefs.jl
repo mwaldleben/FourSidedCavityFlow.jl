@@ -27,53 +27,26 @@ struct SpectralMesh2D <: SpectralMesh
 end
 
 
-# Boundary condition
-
-abstract type BoundaryCondition end
-
-abstract type BC1D <: BoundaryCondition end
-
-struct BCDirichlet1D <: BC1D 
-    val::Real
-end
-
-struct BCNeumann1D <: BC1D 
-    val::Real
-end
-
-abstract type BC2D <: BoundaryCondition end
-
-struct BCDirichlet2D <: BC2D
-    vals::Vector
-end
-
-struct BCNeumann2D <: BC2D
-    vals::Vector
-end
-
-
 # Spectral problems
 
 abstract type SpectralProblem end
 
-# Solve linear 1D BVP with Dirichlet or Neumann boundary conditions
-# Example: u_xx = f(x) 
-# Corresponding Matlab code, Program 13 and 33 in Trefethen
+# Example problem: u_xx = f(x), u(-1) = u(1) = 0
+# Solve linear 1D Boundary value problem with Dirichlet boundary conditions
+# Corresponding Matlab code of program 13 in
+# Spectral Methods in Matlab, Lloyd N. Trefethen
 mutable struct Example1D <: SpectralProblem
     mesh::SpectralMesh1D
-    diff2matBC::Matrix
-    fBC::Vector
-    bcmin::BC1D
-    bcmax::BC1D
+    rhs::Vector
 end
 
 # Lid-driven 4 sided cavity flow problem 
 mutable struct Cavity4Sided <: SpectralProblem
     mesh::SpectralMesh2D
-    bcxmin::BCNeumann2D
-    bcxmax::BCNeumann2D
-    bcymin::BCNeumann2D
-    bcymax::BCNeumann2D
+    bcleft::Vector
+    bcright::Vector
+    bcbottom::Vector
+    bctop::Vector
     reynolds::Real
 end
 
@@ -95,4 +68,3 @@ struct Solution2D <: Solution
     tol::Real
     iter::Integer
 end
-
