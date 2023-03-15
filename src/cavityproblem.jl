@@ -1,10 +1,4 @@
-function Example1D(mesh::SpectralMesh1D, func::Function)
-    rhs = func.(mesh.nodes)
-
-    return Example1D(mesh, rhs)
-end
-
-function Cavity4Sided(mesh::SpectralMesh2D, reynolds::Number)
+function Cavity4Sided(mesh::ChebyshevMesh, reynolds::Number)
     # Neumann boundary conditions on the 2D sides default to zero
     bcleft = zeros(mesh.ny+1)
     bcright = zeros(mesh.ny+1)

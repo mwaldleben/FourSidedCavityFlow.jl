@@ -6,14 +6,12 @@ include("typedefs.jl")
 include("differentiation.jl")
 include("solve.jl")
 include("boundarycondition.jl")
-include("spectralmesh.jl")
-include("spectralproblem.jl")
+include("rectangularmesh.jl")
+include("cavityproblem.jl")
 
-export SpectralMesh1D
-export SpectralMesh2D
-export Example1D
+export ChebyshevMesh
 export Cavity4Sided
-export setNeumannBC2D
+export setNeumannBC
 export calculateΨinitial
 export solve
 

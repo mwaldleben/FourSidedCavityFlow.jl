@@ -6,7 +6,7 @@ using CavityFlow
 n = (32, 32)
 reynolds = 100
 
-mesh = SpectralMesh2D(n)
+mesh = ChebyshevMesh(n)
 probl = Cavity4Sided(mesh, reynolds)
 
 k0 = 10

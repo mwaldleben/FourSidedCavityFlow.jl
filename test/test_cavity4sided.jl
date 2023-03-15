@@ -16,7 +16,7 @@
         n = (8, 8)
         reynolds = 0
 
-        mesh = SpectralMesh2D(n)
+        mesh = ChebyshevMesh(n)
         probl = Cavity4Sided(mesh, reynolds)
 
         Ψexact = [Ψfunc(x,y) for x in mesh.xnodes, y in mesh.ynodes] 
@@ -26,7 +26,7 @@
         Ψbctop(x) = DΨyfunc(x, 1)
         Ψbcbottom(x) = DΨyfunc(x, -1)
 
-        setNeumannBC2D(probl, Ψbcleft, Ψbcright, Ψbctop, Ψbcbottom)
+        setNeumannBC(probl, Ψbcleft, Ψbcright, Ψbctop, Ψbcbottom)
 
         Ψi = Ψexact[3:n[1]-1, 3:n[2]-1]
         Ψ = CavityFlow.constructΨ(probl, Ψi)
@@ -36,7 +36,7 @@
         # Test right-hand-side function of equation for streamfunction 
         # in cavity flow
         n = (6, 6)
-        mesh = SpectralMesh2D(n)
+        mesh = ChebyshevMesh(n)
 
         reynolds = 100
         probl = Cavity4Sided(mesh, reynolds)
@@ -49,7 +49,7 @@
         bctop = bcfunc.(probl.mesh.xnodes)
         bcbottom = -bcfunc.(probl.mesh.xnodes)
 
-        setNeumannBC2D(probl, bcleft, bcright, bctop, bcbottom)
+        setNeumannBC(probl, bcleft, bcright, bctop, bcbottom)
 
         Ψi = zeros((n[1]-3, n[2]-3))
 
@@ -90,7 +90,7 @@
                  0.292893218813453 -0.707106781186548 1.41421356237310 0.707106781186548 -1.70710678118655
                  -0.5 1.17157287525381 -2 6.82842712474619 -5.5]
 
-        mesh = SpectralMesh2D(n)
+        mesh = ChebyshevMesh(n)
 
         reynolds = 500
         probl = Cavity4Sided(mesh, reynolds)
@@ -105,7 +105,7 @@
         bcfunc(x) = @. ((exp(k0*(x-1)) - 1) * (exp(-k0*(x+1)) - 1))^2
         bcfuncneg(x) = .-bcfunc(x)
 
-        setNeumannBC2D(probl, bcfuncneg, bcfunc, bcfunc, bcfuncneg)
+        setNeumannBC(probl, bcfuncneg, bcfunc, bcfunc, bcfuncneg)
 
         Ψref =  [0 0 0 0 0
                  0 0.0807493117423042 0.124977301580937 0.0807493117423042 0

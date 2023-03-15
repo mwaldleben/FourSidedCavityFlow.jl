@@ -59,14 +59,14 @@ end
 nbcells = (32, 32)
 reynolds = 100
 
-mesh = SpectralMesh2D(nbcells)
+mesh = ChebyshevMesh(nbcells)
 probl = Cavity4Sided(mesh, reynolds)
 
 k0 = 10
 bcfunc(x) = @. ((exp(k0*(x-1)) - 1) * (exp(-k0*(x+1)) - 1))^2
 bcfuncneg(x) = -bcfunc(x)
 
-setNeumannBC2D(probl, bcfuncneg, bcfunc, bcfunc, bcfuncneg)
+setNeumannBC(probl, bcfuncneg, bcfunc, bcfunc, bcfuncneg)
 
 Δt = 1
 nbtimesteps = 140

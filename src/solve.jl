@@ -1,22 +1,3 @@
-function solve(probl::Example1D)
-    n = probl.mesh.n
-    D2 = probl.mesh.diff2
-    rhs = probl.rhs
-
-    # Apply boundary conditions (Dirichlet),
-    # is fixed for this example problem
-    A = D2[2:n, 2:n]
-    b = rhs[2:n]
-
-    # Solve system
-    u = A \ b 
-
-    # Add zero boundary values to solution
-    u = [0; u; 0]
-
-    return  u
-end
-
 function solve(probl::Cavity4Sided, Ψinitial::Matrix; tolmax::Real=1e-12, maxiter::Integer=100)
     nx = probl.mesh.nx
     ny = probl.mesh.ny

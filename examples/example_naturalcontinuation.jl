@@ -4,14 +4,14 @@ using CavityFlow
 n = (32, 32)
 reynoldsrange = 100:-1:10 # we want to go backwards
 
-mesh = SpectralMesh2D(n)
+mesh = ChebyshevMesh(n)
 probl = Cavity4Sided(mesh, reynolds)
 
 k0 = 10
 bcfunc(x) = @. ((exp(k0*(x-1)) - 1) * (exp(-k0*(x+1)) - 1))^2
 bcfuncneg(x) = -bcfunc(x)
 
-setNeumannBC2D(probl, bcfuncneg, bcfunc, bcfunc, bcfuncneg)
+setNeumannBC(probl, bcfuncneg, bcfunc, bcfunc, bcfuncneg)
 
 # Create initiual guess for a stable solution
 println("Calculating initial guess...")
