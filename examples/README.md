@@ -16,7 +16,9 @@ you want to make changes to the package and then apply the changes to the
 examples.
 
 3 simple examples for the 4 sided cavity flow are listed below :
-| --- | --- |
-| example\_solve.jl | simple solve for steady, unstable, symmectric solution |
-| example\_timestepping.jl | time-stepping starting with random noised (saved as a gif)  |
-| example\_continuation.jl | Reynolds continuation |
+
+| File                            | Description                                                |
+| ------------------------------- | ---------------------------------------------------------- |
+| example\_solve.jl               | simple solve for steady, unstable, symmectric solution     |
+| example\_timestepping.jl        | time-stepping starting with random noised (saved as a gif) |
+| example\_naturalcontinuation.jl | natural continuation                                       |

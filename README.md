@@ -6,7 +6,7 @@ Development of a Navier-Stokes benchmark solver using spectral methods.
 [![Build Status](https://github.com/morwald/NS2DBenchmarkSolver.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/morwald/NS2DBenchmarkSolver.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coverage](https://codecov.io/gh/morwald/NS2DBenchmarkSolver.jl/branch/main/graph/badge.svg?token=ZLZMNKQSU2)](https://codecov.io/gh/morwald/NS2DBenchmarkSolver.jl)
 
-![](./cavity.png)
+![cavity](./cavity.jpg)
 
 This project aims at developing a set of numerical
 algorithms for the study of the dynamics, linear stability and
