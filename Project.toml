@@ -1,4 +1,4 @@
-name = "NS2DBenchmarkSolver"
+name = "CavityFlow"
 uuid = "81d71bd7-5196-4e79-91c4-f38e47c336fb"
 authors = ["Moritz Waldleben <moritz.waldleben@gmail.com> and contributors"]
 version = "0.1.0"

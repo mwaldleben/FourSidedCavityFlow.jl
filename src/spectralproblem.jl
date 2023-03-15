@@ -74,7 +74,7 @@ function calculateΨinitial(probl::Cavity4Sided; initialguess="rand", Δt=1.::Nu
         ψi, _, _, _ = newton(ftimestep, ψiold)
 
         Ψi = reshape(ψi, (nx-3,nx-3))
-        Ψold = NS2DBenchmarkSolver.constructΨ(probl, Ψi)
+        Ψold = CavityFlow.constructΨ(probl, Ψi)
     end
     return Ψold
 end

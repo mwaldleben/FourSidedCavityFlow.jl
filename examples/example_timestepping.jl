@@ -1,5 +1,5 @@
 using Plots
-using NS2DBenchmarkSolver
+using CavityFlow
 
 # Function implementing timestepping and creating a gif
 # of the time evolution of the streamfunction for the cavity problem
@@ -38,14 +38,14 @@ function timestep(probl::Cavity4Sided, Ψinit, Δt, nbtimesteps)
         ψi = vec(Ψold[3:nx-1, 3:ny-1])
 
         function ftimestep(ψint) 
-            return NS2DBenchmarkSolver.rhstime(probl, Δt, Ψold, ψint)
+            return CavityFlow.rhstime(probl, Δt, Ψold, ψint)
         end
 
         ψiold = vec(Ψold[3:nx-1, 3:ny-1])
-        ψi, _, _, _ = NS2DBenchmarkSolver.newton(ftimestep, ψiold)
+        ψi, _, _, _ = CavityFlow.newton(ftimestep, ψiold)
 
         Ψi = reshape(ψi, (nx-3,nx-3))
-        Ψold = NS2DBenchmarkSolver.constructΨ(probl, Ψi)
+        Ψold = CavityFlow.constructΨ(probl, Ψi)
 
         ψcenter = [Ψold[nxc, nyc]]
         time = [(Δt * step)]

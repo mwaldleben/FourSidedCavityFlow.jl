@@ -1,15 +1,15 @@
 push!(LOAD_PATH,"../src/")
-using Documenter, NS2DBenchmarkSolver
+using Documenter, CavityFlow
 
-DocMeta.setdocmeta!(NS2DBenchmarkSolver, :DocTestSetup, :(using NS2DBenchmarkSolver); recursive=true)
+DocMeta.setdocmeta!(CavityFlow, :DocTestSetup, :(using CavityFlow); recursive=true)
 
 makedocs(
-         sitename = "NS2DBenchmarkSolver.jl",
-         modules  = [NS2DBenchmarkSolver],
+         sitename = "CavityFlow.jl",
+         modules  = [CavityFlow],
          pages=[
                 "Home" => "index.md"
                ])
 
 deploydocs(
-    repo = "github.com/morwald/NS2DBenchmarkSolver.jl.git",
+    repo = "github.com/morwald/CavityFlow.jl.git",
 )

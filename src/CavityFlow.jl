@@ -1,4 +1,4 @@
-module NS2DBenchmarkSolver
+module CavityFlow
 
 using LinearAlgebra
 
@@ -9,7 +9,6 @@ include("boundarycondition.jl")
 include("spectralmesh.jl")
 include("spectralproblem.jl")
 
-export Solution1D
 export SpectralMesh1D
 export SpectralMesh2D
 export Example1D

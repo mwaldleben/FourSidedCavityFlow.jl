@@ -5,7 +5,7 @@
         D = [19/6 -4 4/3 -1/2; 1 -1/3 -1 1/3; -1/3 1 1/3 -1; 1/2 -4/3 4 -19/6]
 
         Minvref = [-9 3; -3 9]/32
-        Minv = NS2DBenchmarkSolver.constructBCmatrix(D)
+        Minv = CavityFlow.constructBCmatrix(D)
         @test Minv ≈ Minvref
 
         # Test boundary reconstruction Ψ when imposing derivatives at boundary
@@ -29,7 +29,7 @@
         setNeumannBC2D(probl, Ψbcleft, Ψbcright, Ψbctop, Ψbcbottom)
 
         Ψi = Ψexact[3:n[1]-1, 3:n[2]-1]
-        Ψ = NS2DBenchmarkSolver.constructΨ(probl, Ψi)
+        Ψ = CavityFlow.constructΨ(probl, Ψi)
 
         @test Ψ ≈ Ψexact atol=1e-6
 
@@ -53,9 +53,9 @@
 
         Ψi = zeros((n[1]-3, n[2]-3))
 
-        Ψ = NS2DBenchmarkSolver.constructΨ(probl, Ψi)
+        Ψ = CavityFlow.constructΨ(probl, Ψi)
 
-        FΨ = NS2DBenchmarkSolver.rhs(probl, Ψi)
+        FΨ = CavityFlow.rhs(probl, Ψi)
         FΨref = [-0.0624820681282460, 0.576027334953858, 0.245807608047586, -0.642691167651798, 0.0121206968541711, -0.642691167651798, 0.245807608047580, 0.576027334953857, -0.0624820681282459]
         @test FΨ ≈ FΨref
 
@@ -65,12 +65,12 @@
         Ψold = ones((n[1]+1, n[2]+1))
         Δt = 1
 
-        FΨ = NS2DBenchmarkSolver.rhstime(probl, Δt, Ψold, ψi)
+        FΨ = CavityFlow.rhstime(probl, Δt, Ψold, ψi)
         FΨref = [21.7652385080886, 7.16533446461262, 17.3663586367691, 3.45590293725733, -6.84022498215817, 3.45590293725730, 17.3663586367691, 7.16533446461265, 21.7652385080885]
         @test FΨ ≈ FΨref
 
         # Test to construct initial guess 
-        Ψinitial = NS2DBenchmarkSolver.calculateΨinitial(probl, nbtimesteps=200)
+        Ψinitial = CavityFlow.calculateΨinitial(probl, nbtimesteps=200)
         Ψinitialref = [0 0 0 0 0 0 0
                        0 0.0223534291102081 0.0655941971343996 0.0589510766581025 0.0555732229353761 0.0204248917264253 0
                        0 -0.0664329942047326 -0.0337131774973950 -0.0810657532138882 -0.0857836868595323 -0.0764539684037562 0
@@ -114,7 +114,7 @@
                  0 0 0 0 0]
 
         Ψi = zeros((probl.mesh.nx-3, probl.mesh.ny-3))
-        Ψ = NS2DBenchmarkSolver.constructΨ(probl, Ψi)
+        Ψ = CavityFlow.constructΨ(probl, Ψi)
         @test Ψ ≈ Ψref
 
         # Test solve 

@@ -7,7 +7,7 @@
     func(x) = exp(4*x) 
     probl = Example1D(mesh, func) 
 
-    u = NS2DBenchmarkSolver.solve(probl)
+    u = CavityFlow.solve(probl)
 
     fexact(x) = @. (exp(4*x) - sinh(4)*x - cosh(4))/16
     uexact = fexact(mesh.nodes)
