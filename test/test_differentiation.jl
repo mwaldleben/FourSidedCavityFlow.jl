@@ -3,7 +3,7 @@
     D1ref = [1.5 -2.0 0.5; 0.5 0.0 -0.5; -0.5 2.0 -1.5]
     nodesref = [1; 0; -1]
 
-    nodes, D1, _, _ = NS2DBenchmarkSolver.diffchebychev(n)
+    nodes, D1, _, _ = CavityFlow.diffchebyshev(n)
     @test nodes ≈ nodesref
     @test D1 ≈ D1ref
 
@@ -12,7 +12,7 @@
     D1ref = [1.5 -2.0 0.5; 0.5 0.0 -0.5; -0.5 2.0 -1.5]
     nodesref = [1; 0; -1]
 
-    nodes, D1, _, _ = NS2DBenchmarkSolver.diffchebychev(n, length=2)
+    nodes, D1, _, _ = CavityFlow.diffchebyshev(n, length=2)
     @test nodes ≈ nodesref skip=true
     @test D1 ≈ D1ref skip=true
 end

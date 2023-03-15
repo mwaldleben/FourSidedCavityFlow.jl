@@ -1,13 +1,13 @@
-# NS2DBenchmarkSolver.jl Documentation
+# CavityFlow.jl Documentation
 
 ```@meta
-CurrentModule = NS2DBenchmarkSolver
+CurrentModule = CavityFlow
 DocTestSetup = quote
-    using NS2DBenchmarkSolver 
+    using CavityFlow 
 end
 ```
 
 ```@autodocs
-Modules = [NS2DBenchmarkSolver]
+Modules = [CavityFlow]
 ```
 

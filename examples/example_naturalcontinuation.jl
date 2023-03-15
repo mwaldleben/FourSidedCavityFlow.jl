@@ -1,5 +1,5 @@
 using Plots
-using NS2DBenchmarkSolver
+using CavityFlow
 
 n = (32, 32)
 reynoldsrange = 100:-1:10 # we want to go backwards
@@ -15,7 +15,7 @@ setNeumannBC2D(probl, bcfuncneg, bcfunc, bcfunc, bcfuncneg)
 
 # Create initiual guess for a stable solution
 println("Calculating initial guess...")
-Ψinitial = NS2DBenchmarkSolver.calculateΨinitial(probl, Δt=1, nbtimesteps=140)
+Ψinitial = CavityFlow.calculateΨinitial(probl, Δt=1, nbtimesteps=140)
 contourf(reverse(mesh.xnodes), reverse(mesh.ynodes), Ψinitial')
 
 nx = probl.mesh.nx

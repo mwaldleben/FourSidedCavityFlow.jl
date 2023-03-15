@@ -1,4 +1,4 @@
-using NS2DBenchmarkSolver
+using CavityFlow 
 using LinearAlgebra
 using Test
 

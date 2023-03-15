@@ -1,5 +1,5 @@
 using Plots
-using NS2DBenchmarkSolver
+using CavityFlow
 
 # Example of the cavity flow to find a steady state solution 
 # using an initial guess generated from time evolution
