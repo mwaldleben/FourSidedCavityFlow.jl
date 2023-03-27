@@ -1,34 +1,34 @@
-# Rectangular Mesh
+mutable struct CavityParameters{T<:Real}
+    # Parameters
+    Re::T
 
-abstract type RectangularMesh end
+    # Mesh and boundary paramaters 
+    n::Int64
+    nodes::Vector{T}
+    D1::Matrix{T}
+    D2::Matrix{T}
+    D4::Matrix{T}
+    bcleft::Vector{T}
+    bcright::Vector{T}
+    bctop::Vector{T}
+    bcbottom::Vector{T}
+    m11::T
+    m12::T
+    m21::T
+    m22::T
 
-struct ChebyshevMesh <: RectangularMesh 
-    nx::Int
-    ny::Int
-    lengthx::Real
-    lengthy::Real
-    xnodes::Vector
-    ynodes::Vector
-    diffx1::Matrix
-    diffx2::Matrix
-    diffx4::Matrix
-    diffy1::Matrix
-    diffy2::Matrix
-    diffy4::Matrix
-end
-
-
-# Cavity problems
-
-abstract type CavityProblem end
-
-# Lid-driven 4 sided cavity flow problem 
-# with Chebyshev discretization
-mutable struct Cavity4Sided <: CavityProblem
-    mesh::ChebyshevMesh
-    bcleft::Vector
-    bcright::Vector
-    bcbottom::Vector
-    bctop::Vector
-    reynolds::Real
+    # Cache for calculations
+    h1::Vector{T}
+    h2::Vector{T}
+    k1::Vector{T}
+    k2::Vector{T}
+    fΨ::Matrix{T}
+    Ψ::Matrix{T}
+    Ψ0::Matrix{T}
+    D2Ψ::Matrix{T}
+    ΨD2::Matrix{T}
+    D4Ψ::Matrix{T}
+    ΨD4::Matrix{T}
+    biharmΨ::Matrix{T}
+    laplΨ::Matrix{T}
 end
