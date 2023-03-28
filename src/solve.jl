@@ -34,6 +34,35 @@ function solve_timestepping(Ψstart, p::CavityParameters, Δt, nb_timesteps)
     return Ψ
 end
 
+function solve_timestepping_save(Ψstart, p::CavityParameters, Δt, steps)
+    @unpack n,Ψ,Ψ0 = p
+
+    @inbounds Ψ0 .= Ψstart
+    @inbounds u0 = reshape(Ψstart[3:n-1,3:n-1],(n-3)*(n-3))
+    fu = similar(u0)
+
+    ft!(fu,u,p) = ftime!(fu,u,p,Δt)
+
+    sol = Vector{typeof(Ψstart)}(undef,steps) 
+    time = Vector{Float64}(undef,steps)
+
+    sol[1] = Ψstart
+    time[1] = 0
+
+    @time for i in 1:steps-1
+        u0, _, _ = newton(ft!,u0,p)
+
+        Ψ[3:n-1,3:n-1] .= reshape(u0, (n-3,n-3))
+        construct_BC!(p)
+        Ψ0 .= Ψ
+
+        sol[i+1] = Ψ 
+        time[i+1] = Δt*i
+    end
+
+    return sol, time
+end
+
 function newton(f!,x0, p; tolmax=1e-10, maxiter=100)
     x = copy(x0)
     dim = size(x, 1)

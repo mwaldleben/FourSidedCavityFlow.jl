@@ -30,8 +30,8 @@ end
 function f!(fu,u,p)
     @unpack Re,n,D1,D2,D4,fΨ,Ψ,D2Ψ,ΨD2,D4Ψ,ΨD4,laplΨ,biharmΨ = p
 
-    # @inbounds @views Ψ[3:n-1,3:n-1][:] .= u
-    @inbounds Ψ[3:n-1,3:n-1] = reshape(u,n-3,n-3)
+    @inbounds @views Ψ[3:n-1,3:n-1][:] .= u
+    # @inbounds Ψ[3:n-1,3:n-1] = reshape(u,n-3,n-3)
 
     construct_BC!(p)
 
@@ -54,8 +54,8 @@ function f!(fu,u,p)
     @inbounds @. laplΨ = D2Ψ*ΨD4 - D4Ψ*ΨD2
     @inbounds @. fΨ = (1/Re)*biharmΨ - laplΨ
 
-    # @inbounds @views fu .= fΨ[3:n-1,3:n-1][:]
-    @inbounds fu .= reshape(fΨ[3:n-1,3:n-1],(n-3)*(n-3))
+    @inbounds @views fu .= fΨ[3:n-1,3:n-1][:]
+    # @inbounds fu .= reshape(fΨ[3:n-1,3:n-1],(n-3)*(n-3))
  
     return nothing
 end

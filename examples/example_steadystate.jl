@@ -1,4 +1,4 @@
-using Plots
+using Plots; gr()
 using CavityFlow
 const CF = CavityFlow
 
@@ -13,4 +13,4 @@ p = CF.setup_params(n, Re)
 println("Iterations: $iter")
 
 # Reverse solution as non ascending intervals are not supported by Plots
-contourf(reverse(p.nodes), reverse(p.nodes), Ψ')
+contourf(reverse(p.nodes), reverse(p.nodes), Ψ', aspect_ratio=1)
