@@ -1,18 +1,12 @@
 module CavityFlow
 
 using LinearAlgebra
+using FiniteDiff 
+using UnPack
 
 include("typedefs.jl")
 include("differentiation.jl")
+include("cavity.jl")
 include("solve.jl")
-include("boundarycondition.jl")
-include("rectangularmesh.jl")
-include("cavityproblem.jl")
-
-export ChebyshevMesh
-export Cavity4Sided
-export setNeumannBC
-export calculateΨinitial
-export solve
 
 end

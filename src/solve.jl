@@ -1,120 +1,108 @@
-function solve(probl::Cavity4Sided, Ψinitial::Matrix; tolmax::Real=1e-12, maxiter::Integer=100)
-    nx = probl.mesh.nx
-    ny = probl.mesh.ny
+function solve_steadystate(Ψ0, p::CavityParameters)
+    @unpack n = p
 
-    ψi = vec(Ψinitial[3:nx-1, 3:ny-1])
+    @inbounds u0 = reshape(Ψ0[3:n-1,3:n-1],(n-3)*(n-3))
 
-    # Solve stationary equation using newton-raphson
-    function fnewton(ψi) 
-       return rhs(probl, ψi)
+    _, iter, tol = newton(f!,u0,p)
+
+    construct_BC!(p)
+
+    return p.Ψ, iter, tol
+end
+
+function solve_timestepping(Ψstart, p::CavityParameters, Δt, nb_timesteps)
+    @unpack n,Ψ,Ψ0 = p
+
+    @inbounds Ψ0 .= Ψstart
+    @inbounds u0 = reshape(Ψstart[3:n-1,3:n-1],(n-3)*(n-3))
+    fu = similar(u0)
+
+    ft!(fu,u,p) = ftime!(fu,u,p,Δt)
+
+    for step in 1:nb_timesteps
+        u0, iter, tol = newton(ft!,u0,p)
+
+        Ψ[3:n-1,3:n-1] .= reshape(u0, (n-3,n-3))
+
+        Ψ0 .= Ψ 
+
+        time = [(Δt * step)]
     end
-    ψi, iter, tol, isconverged = newton(fnewton, ψi; tolmax=tolmax, maxiter=maxiter)
 
-    Ψi = reshape(ψi, (nx-3,ny-3))
-    Ψ = constructΨ(probl, Ψi)
+    construct_BC!(p)
 
-    return Ψ, iter, tol, isconverged
+    return Ψ
 end
 
-function solve(probl::Cavity4Sided; tolmax::Real=1e-12, maxiter::Integer=100)
-    nx = probl.mesh.nx
-    ny = probl.mesh.ny
+function solve_timestepping_save(Ψstart, p::CavityParameters, Δt, steps)
+    @unpack n,Ψ,Ψ0 = p
 
-    Ψi = zeros((nx+1),(ny+1))
+    @inbounds Ψ0 .= Ψstart
+    @inbounds u0 = reshape(Ψstart[3:n-1,3:n-1],(n-3)*(n-3))
+    fu = similar(u0)
 
-    return solve(probl, Ψi; tolmax=tolmax, maxiter=maxiter)
+    ft!(fu,u,p) = ftime!(fu,u,p,Δt)
+
+    sol = Vector{typeof(Ψstart)}(undef,steps) 
+    time = Vector{Float64}(undef,steps)
+
+    sol[1] = Ψstart
+    time[1] = 0
+
+    @time for i in 1:steps-1
+        u0, _, _ = newton(ft!,u0,p)
+
+        Ψ[3:n-1,3:n-1] .= reshape(u0, (n-3,n-3))
+        construct_BC!(p)
+        Ψ0 .= Ψ
+
+        sol[i+1] = Ψ 
+        time[i+1] = Δt*i
+    end
+
+    return sol, time
 end
 
-function rhs(probl::Cavity4Sided, ψi)
-    nx = probl.mesh.nx
-    ny = probl.mesh.ny
-    Dx1 = probl.mesh.diffx1
-    Dy1 = probl.mesh.diffy1
-    Dx2 = probl.mesh.diffx2
-    Dy2 = probl.mesh.diffy2
-    Dx4 = probl.mesh.diffx4
-    Dy4 = probl.mesh.diffy4
-    Re = probl.reynolds
-
-    Ψi = reshape(ψi, (nx-3, ny-3))
-    Ψ = constructΨ(probl, Ψi)
-
-    biharmΨ = Dx4*Ψ +  Ψ*Dy4' + 2*(Dx2*Ψ)*Dy2'
-    laplΨ = Dx2*Ψ + Ψ*Dy2'
-    nonlinterm = (Dx1*Ψ).*(laplΨ*Dy1') - (Dx1*laplΨ).*(Ψ*Dy1')
-    
-    FΨ = (1/Re)*biharmΨ - nonlinterm
-    Fψint = vec(FΨ[3:nx-1, 3:ny-1])
-
-    return Fψint
-end
-
-function rhstime(probl::Cavity4Sided, Δt::Real, Ψold::Matrix, ψi::Vector)
-    nx = probl.mesh.nx
-    ny = probl.mesh.ny
-    Dx1 = probl.mesh.diffx1
-    Dy1 = probl.mesh.diffy1
-    Dx2 = probl.mesh.diffx2
-    Dy2 = probl.mesh.diffy2
-    Dx4 = probl.mesh.diffx4
-    Dy4 = probl.mesh.diffy4
-    Re = probl.reynolds
-
-    Ψi = reshape(ψi, (nx-3, ny-3))
-    Ψ = constructΨ(probl, Ψi)
-
-    Ψold = reshape(Ψold, (nx+1, ny+1))
-
-    laplΨ = Dx2*Ψ + Ψ*Dy2'
-    laplΨold = Dx2*Ψold + Ψold*Dy2'
-
-    biharmΨ = Dx4*Ψ +  Ψ*Dy4' + 2*(Dx2*Ψ)*Dy2'
-    nonlinterm = (Dx1*Ψ).*(laplΨ*Dy1') - (Dx1*laplΨ).*(Ψ*Dy1')
-    
-    FΨ = (1/Re)*biharmΨ - nonlinterm
-
-    FΨ = Δt*FΨ - laplΨ + laplΨold
-    Fψint = vec(FΨ[3:nx-1, 3:ny-1])
-
-    return Fψint
-end
-
-function jacobian(x::Vector, func::Function; dx=1e-8::Number)
+function newton(f!,x0, p; tolmax=1e-10, maxiter=100)
+    x = copy(x0)
     dim = size(x, 1)
-    J = zeros((dim, dim))
 
-    Id = I(dim) * dx
+    fx = similar(x)
+    f!(fx,x,p)
 
-    Fx1 = func(x)
-        
-    for m = 1:dim
-        Fx2 = func(x + Id[:, m])
-        J[:, m] = (Fx2 - Fx1) / Id[m, m]
-    end
-    return J
-end
-
-function newton(func::Function, x0::Vector; tolmax=1e-12::Number, maxiter=100::Integer)
-    x = x0
+    J = zeros(dim,dim)
+    dx = zeros(dim) 
+    cache = FiniteDiff.JacobianCache(x)
 
     iter = 0
-    tol = 1
+    tol = 1.0
     while tol>tolmax && iter<maxiter
-        Fx = func(x)
-        jac = jacobian(x, func)
-        dx = jac \ (-Fx)
-        x = x + dx        
+        FiniteDiff.finite_difference_jacobian!(J,(fx,x) -> f!(fx,x,p),x,cache)
+        # jacobian!(J,f!,x,p;dx=1e-8)
+
+        dx .= J \ (-fx)
+        @. x = x + dx        
+
+        f!(fx,x,p)
 
         tol = norm(dx)
         iter += 1 
     end
 
-    isconverged = true
-    if iter == maxiter 
-        isconverged = false
-        println("Newton method did not converge in $iter iterations!")
+    return x, iter, tol
+end
 
+function jacobian!(J,f!,x,p;dx=1e-8)
+    dim = size(x, 1)
+
+    Id = I(dim) * dx
+
+    f1 = similar(x)
+    f2 = similar(x)
+    f!(f1,x,p)
+
+    for m = 1:dim
+        f!(f2,x+Id[:,m],p)
+        J[:,m] = (f2 - f1) / Id[m,m]
     end
-
-    return x, iter, tol, isconverged
 end

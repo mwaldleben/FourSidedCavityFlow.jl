@@ -9,7 +9,7 @@ discretizations and boundary conditions for the cavity flow problem.
 [![Coverage](https://codecov.io/gh/morwald/CavityFlow.jl/branch/main/graph/badge.svg?token=ZLZMNKQSU2)](https://codecov.io/gh/morwald/CavityFlow.jl)
 
 
-![cavity](./cavity.jpg)
+![cavity](./cavity.png)
 
 This project aims at developing a set of numerical
 algorithms for the study of the dynamics, linear stability, and
