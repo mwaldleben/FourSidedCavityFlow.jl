@@ -22,6 +22,7 @@ mutable struct CavityParameters{T <: Real}
     h2::Vector{T}
     k1::Vector{T}
     k2::Vector{T}
+    scl::T
     fΨ::Matrix{T}
     Ψ::Matrix{T}
     Ψ0::Matrix{T}

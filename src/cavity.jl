@@ -62,6 +62,39 @@ function f!(fu, u, p)
     return nothing
 end
 
+function f2!(fu, u, p)
+    @unpack Re, n, D1, D2, D4, fΨ, Ψ, D2Ψ, ΨD2, D4Ψ, ΨD4, laplΨ, biharmΨ = p
+
+    @inbounds @views Ψ[3:(n - 1), 3:(n - 1)][:] .= u[1:(end - 1)]
+    # @inbounds Ψ[3:n-1,3:n-1] = reshape(u,n-3,n-3)
+
+    construct_BC!(p)
+
+    mul!(D4Ψ, D4, Ψ)
+    mul!(ΨD4, Ψ, D4')
+
+    mul!(D2Ψ, D2, Ψ)
+    mul!(ΨD2, Ψ, D2')
+
+    mul!(laplΨ, D2Ψ, D2') # using as intermediate memory
+    @inbounds @. biharmΨ = D4Ψ + ΨD4 + 2 * laplΨ
+    @inbounds @. laplΨ = D2Ψ + ΨD2
+
+    mul!(D2Ψ, D1, Ψ)
+    mul!(ΨD2, Ψ, D1')
+
+    mul!(ΨD4, laplΨ, D1')
+    mul!(D4Ψ, D1, laplΨ)
+
+    @inbounds @. laplΨ = D2Ψ * ΨD4 - D4Ψ * ΨD2
+    @inbounds @. fΨ = (1 / Re) * biharmΨ - laplΨ
+
+    @inbounds @views fu .= fΨ[3:(n - 1), 3:(n - 1)][:]
+    # @inbounds fu .= reshape(fΨ[3:n-1,3:n-1],(n-3)*(n-3))
+
+    return nothing
+end
+
 function ftime!(fu, u, p, Δt)
     @unpack Re, n, D1, D2, D4, fΨ, Ψ, Ψ0, D2Ψ, ΨD2, D4Ψ, ΨD4, laplΨ, biharmΨ = p
 
@@ -114,6 +147,7 @@ function setup_params(n, Re)
     h2 = similar(bctop[3:(n - 1)])
     k1 = similar(bctop[2:n])
     k2 = similar(bctop[2:n])
+    scl = 1e6
 
     Ψ = zeros(n + 1, n + 1)
     Ψ0 = zeros(n + 1, n + 1)
@@ -125,33 +159,10 @@ function setup_params(n, Re)
     D4Ψ = similar(Ψ)
     ΨD4 = similar(Ψ)
 
-    p = CavityParameters{Float64}(Re,
-                                  n,
-                                  nodes,
-                                  D1,
-                                  D2,
-                                  D4,
-                                  bcleft,
-                                  bcright,
-                                  bctop,
-                                  bcbottom,
-                                  Minv[1, 1],
-                                  Minv[1, 2],
-                                  Minv[2, 1],
-                                  Minv[2, 2],
-                                  h1,
-                                  h2,
-                                  k1,
-                                  k2,
-                                  fΨ,
-                                  Ψ,
-                                  Ψ0,
-                                  D2Ψ,
-                                  ΨD2,
-                                  D4Ψ,
-                                  ΨD4,
-                                  biharmΨ,
-                                  laplΨ)
+    p = CavityParameters{Float64}(Re, n, nodes, D1, D2, D4, bcleft, bcright, bctop,
+                                  bcbottom, Minv[1, 1], Minv[1, 2], Minv[2, 1], Minv[2, 2],
+                                  h1, h2, k1, k2, scl, fΨ, Ψ, Ψ0, D2Ψ, ΨD2, D4Ψ, ΨD4,
+                                  biharmΨ, laplΨ)
 
     return p
 end
