@@ -1,10 +1,11 @@
-using Plots; gr()
+using Plots;
+gr();
 using CavityFlow
 const CF = CavityFlow
 
 # Timestepping and creating a gif of the time evolution of the streamfunction 
 # for the cavity problem
-n = 32 
+n = 32
 Re = 100
 
 p = CF.setup_params(n, Re)
@@ -12,18 +13,15 @@ p = CF.setup_params(n, Re)
 Δt = 1
 steps = 140
 
-nxc = Int(floor(n/2)+1)
-nyc = Int(floor(n/2)+1)
+nxc = Int(floor(n / 2) + 1)
+nyc = Int(floor(n / 2) + 1)
 
 # Convergence to one of the two possible assymetric solutions
-Ψ0 = 1e-3*randn((n+1),(n+1))
-
+Ψ0 = 1e-3 * randn((n + 1), (n + 1))
 
 # Get final solution
 Ψ = CF.solve_timestepping(Ψ0, p, Δt, steps)
-contourf(reverse(p.nodes), reverse(p.nodes), Ψ', aspect_ratio=1)
-
-
+contourf(reverse(p.nodes), reverse(p.nodes), Ψ', aspect_ratio = 1)
 
 # Create gif of saved time steps 
 # sol,time = CF.solve_timestepping_save(Ψ0, p, Δt, steps)

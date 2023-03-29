@@ -1,4 +1,4 @@
-mutable struct CavityParameters{T<:Real}
+mutable struct CavityParameters{T <: Real}
     # Parameters
     Re::T
 

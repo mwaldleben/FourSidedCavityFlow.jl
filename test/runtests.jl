@@ -1,4 +1,4 @@
-using CavityFlow 
+using CavityFlow
 using LinearAlgebra
 using Test
 

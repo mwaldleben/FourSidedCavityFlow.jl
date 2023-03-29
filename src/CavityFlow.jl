@@ -1,7 +1,7 @@
 module CavityFlow
 
 using LinearAlgebra
-using FiniteDiff 
+using FiniteDiff
 using UnPack
 
 include("typedefs.jl")
