@@ -47,8 +47,20 @@
 
         Re_start = Re
         ΔRe = -1
-        steps = 2
-        CavityFlow.solve_continuation(Ψ0, p, Re_start, ΔRe, steps)
+        steps = 5
+        sol, Re_series = CavityFlow.solve_continuation(Ψ0, p, Re_start, ΔRe, steps)
+
+        u_ref = [-0.0323258768609650
+                 -0.150480656644792
+                 -0.0862626923986386
+                 -0.0793510655229980
+                 -0.186282534889568
+                 -0.0793510655229998
+                 -0.0862626923986375
+                 -0.150480656644792
+                 -0.0323258768609665
+                 9.61531901509719e-05]
+        @test sol[steps] ≈ u_ref
     end
     @testset "newton_continuation" begin
         n = 6
@@ -62,7 +74,6 @@
 
         x, iter, tol = CavityFlow.newton_continuation(CavityFlow.f!, x1, x2, s, p;
                                                       tolmax = 1e-10, maxiter = 1)
-
         x_ref = [
             1.81433267406029,
             1.82898296631620,

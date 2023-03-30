@@ -44,10 +44,10 @@ function solve_timestepping_save(Ψstart, p::CavityParameters, Δt, steps)
     ft!(fu, u, p) = ftime!(fu, u, p, Δt)
 
     sol = Vector{typeof(Ψstart)}(undef, steps)
-    time = Vector{Float64}(undef, steps)
+    time_series = Vector{Float64}(undef, steps)
 
     sol[1] = Ψstart
-    time[1] = 0
+    time_series[1] = 0
 
     for i in 1:(steps - 1)
         u0, _, _ = newton(ft!, u0, p)
@@ -57,10 +57,10 @@ function solve_timestepping_save(Ψstart, p::CavityParameters, Δt, steps)
         Ψ0 .= Ψ
 
         sol[i + 1] = Ψ
-        time[i + 1] = Δt * i
+        time_series[i + 1] = Δt * i
     end
 
-    return sol, time
+    return sol, time_series
 end
 
 function solve_continuation(Ψ0, p::CavityParameters, Re_start, ΔRe, steps)
@@ -77,18 +77,25 @@ function solve_continuation(Ψ0, p::CavityParameters, Re_start, ΔRe, steps)
 
     s = norm(u2 - u1)
 
-    s1 = s
+    sol = Vector{typeof(u0)}(undef, steps)
+    Re_series = Vector{typeof(u0[1])}(undef, steps)
 
-    for i in 1:steps
+    sol[1] = u1
+    sol[2] = u2
+    Re_series[1] = Re_start
+    Re_series[2] = Re_start + ΔRe
+
+    for i in 1:(steps - 2)
         u, _, _ = newton_continuation(f!, u1, u2, s, p)
-
-        Re = u[end]
-
-        s2 = norm(u - u2)
 
         u1 = u2
         u2 = u
+
+        sol[i + 2] = u
+        Re_series[i + 2] = u[end] * p.scl
     end
+
+    return sol, Re_series
 end
 
 function newton_continuation(f!, x1, x2, s, p; tolmax = 1e-10, maxiter = 100)
@@ -112,7 +119,7 @@ function newton_continuation(f!, x1, x2, s, p; tolmax = 1e-10, maxiter = 100)
     iter = 0
     tol = 1.0
     while tol > tolmax && iter < maxiter
-        p.Re = x[end] * p.scl
+        p.Re = x[end] * p.scl # unscaled reynolds
 
         xi = x[1:(end - 1)]
         fxi = fx[1:(end - 1)]
@@ -127,7 +134,7 @@ function newton_continuation(f!, x1, x2, s, p; tolmax = 1e-10, maxiter = 100)
         J2[1:dim, 1:dim] = J
 
         # Calculate change in "Reynolds variable"
-        p.Re = (x[end] + eps) * p.scl
+        p.Re = (x[end] + eps) * p.scl # unscaled Reynolds
         f!(fxi_Re, xi, p)
         J2[1:dim, dim + 1] = (fxi_Re - fxi) / eps
 
