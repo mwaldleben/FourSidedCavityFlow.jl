@@ -1,7 +1,6 @@
-using Plots;
-gr();
-using CavityFlow
-const CF = CavityFlow
+import CavityFlow as CF
+using Plots
+gr()
 
 # Example of the cavity flow to find a steady state solution 
 n = 64
