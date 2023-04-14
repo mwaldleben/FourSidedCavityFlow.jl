@@ -29,11 +29,17 @@ function construct_BC!(p)
     return nothing
 end
 
-function f!(fu, u, p)
+function construct_BC(p)
+    construct_BC!(p)
+
+    return copy(p.Ψ)
+end
+
+function f!(fu, u, p::CavityParameters)
     @unpack Re, n, D1, D2, D4, fΨ, Ψ, D2Ψ, ΨD2, D4Ψ, ΨD4, laplΨ, biharmΨ = p
 
     @inbounds @views Ψ[3:(n - 1), 3:(n - 1)][:] .= u
-    # @inbounds Ψ[3:n-1,3:n-1] = reshape(u,n-3,n-3)
+    # @inbounds Ψ[3:(n - 1),3:(n - 1)] = reshape(u, n - 3 , n - 3)
 
     construct_BC!(p)
 
@@ -57,15 +63,16 @@ function f!(fu, u, p)
     @inbounds @. fΨ = (1 / Re) * biharmΨ - laplΨ
 
     @inbounds @views fu .= fΨ[3:(n - 1), 3:(n - 1)][:]
-    # @inbounds fu .= reshape(fΨ[3:n-1,3:n-1],(n-3)*(n-3))
+    # @inbounds fu .= reshape(fΨ[3:(n - 1), 3:(n - 1)], (n - 3) * (n - 3))
 
     return nothing
 end
 
 function ftime!(fu, u, p, Δt)
-    @unpack Re, n, D1, D2, D4, fΨ, Ψ, Ψ0, D2Ψ, ΨD2, D4Ψ, ΨD4, laplΨ, biharmΨ = p
+    @unpack Re, n, D1, D2, D4, fΨ, Ψ, Ψ0, D2Ψ, ΨD2, D4Ψ, ΨD4, laplΨ, biharmΨ, laplΨ0, nonlinΨ = p
 
-    @inbounds Ψ[3:(n - 1), 3:(n - 1)] = reshape(u, n - 3, n - 3)
+    @inbounds @views Ψ[3:(n - 1), 3:(n - 1)][:] .= u
+    # @inbounds Ψ[3:(n - 1), 3:(n - 1)] = reshape(u, n - 3, n - 3)
 
     construct_BC!(p)
 
@@ -80,7 +87,10 @@ function ftime!(fu, u, p, Δt)
     @inbounds @. biharmΨ = D4Ψ + ΨD4 + 2 * laplΨ
     @inbounds @. laplΨ = D2Ψ + ΨD2
 
-    laplΨ0 = D2 * Ψ0 + Ψ0 * D2'
+    mul!(D2Ψ, D2, Ψ0)
+    mul!(ΨD2, Ψ0, D2')
+
+    @inbounds @. laplΨ0 = D2Ψ + ΨD2
 
     mul!(D2Ψ, D1, Ψ)
     mul!(ΨD2, Ψ, D1')
@@ -88,12 +98,13 @@ function ftime!(fu, u, p, Δt)
     mul!(ΨD4, laplΨ, D1')
     mul!(D4Ψ, D1, laplΨ)
 
-    @inbounds nonlinΨ = @. D2Ψ * ΨD4 - D4Ψ * ΨD2
+    @inbounds @. nonlinΨ = D2Ψ * ΨD4 - D4Ψ * ΨD2
     @inbounds @. fΨ = (1 / Re) * biharmΨ - nonlinΨ
 
     @inbounds @. fΨ = Δt * fΨ - laplΨ + laplΨ0
 
-    @inbounds fu .= reshape(fΨ[3:(n - 1), 3:(n - 1)], (n - 3) * (n - 3))
+    @inbounds @views fu .= fΨ[3:(n - 1), 3:(n - 1)][:]
+    # @inbounds fu .= reshape(fΨ[3:(n - 1), 3:(n - 1)], (n - 3) * (n - 3))
 
     return nothing
 end
@@ -114,44 +125,24 @@ function setup_params(n, Re)
     h2 = similar(bctop[3:(n - 1)])
     k1 = similar(bctop[2:n])
     k2 = similar(bctop[2:n])
+    scl = 1e6
 
     Ψ = zeros(n + 1, n + 1)
     Ψ0 = zeros(n + 1, n + 1)
     fΨ = similar(Ψ)
     laplΨ = similar(Ψ)
     biharmΨ = similar(Ψ)
+    laplΨ0 = similar(Ψ)
+    nonlinΨ = similar(Ψ)
     D2Ψ = similar(Ψ)
     ΨD2 = similar(Ψ)
     D4Ψ = similar(Ψ)
     ΨD4 = similar(Ψ)
 
-    p = CavityParameters{Float64}(Re,
-                                  n,
-                                  nodes,
-                                  D1,
-                                  D2,
-                                  D4,
-                                  bcleft,
-                                  bcright,
-                                  bctop,
-                                  bcbottom,
-                                  Minv[1, 1],
-                                  Minv[1, 2],
-                                  Minv[2, 1],
-                                  Minv[2, 2],
-                                  h1,
-                                  h2,
-                                  k1,
-                                  k2,
-                                  fΨ,
-                                  Ψ,
-                                  Ψ0,
-                                  D2Ψ,
-                                  ΨD2,
-                                  D4Ψ,
-                                  ΨD4,
-                                  biharmΨ,
-                                  laplΨ)
+    p = CavityParameters{Float64}(Re, n, nodes, D1, D2, D4, bcleft, bcright, bctop,
+                                  bcbottom, Minv[1, 1], Minv[1, 2], Minv[2, 1], Minv[2, 2],
+                                  h1, h2, k1, k2, scl, fΨ, Ψ, Ψ0, D2Ψ, ΨD2, D4Ψ, ΨD4,
+                                  biharmΨ, laplΨ, laplΨ0, nonlinΨ)
 
     return p
 end

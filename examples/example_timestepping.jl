@@ -1,7 +1,6 @@
-using Plots;
-gr();
-using CavityFlow
-const CF = CavityFlow
+import CavityFlow as CF
+using Plots
+gr()
 
 # Timestepping and creating a gif of the time evolution of the streamfunction 
 # for the cavity problem
@@ -21,6 +20,7 @@ nyc = Int(floor(n / 2) + 1)
 
 # Get final solution
 Ψ = CF.solve_timestepping(Ψ0, p, Δt, steps)
+
 contourf(reverse(p.nodes), reverse(p.nodes), Ψ', aspect_ratio = 1)
 
 # Create gif of saved time steps 
