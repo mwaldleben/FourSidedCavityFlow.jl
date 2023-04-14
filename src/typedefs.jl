@@ -32,4 +32,6 @@ mutable struct CavityParameters{T <: Real}
     ΨD4::Matrix{T}
     biharmΨ::Matrix{T}
     laplΨ::Matrix{T}
+    laplΨ0::Matrix{T}
+    nonlinΨ::Matrix{T}
 end

@@ -1,13 +1,13 @@
-function solve_steadystate(Ψ0, p::CavityParameters)
+function solve_steadystate(Ψ0, p::CavityParameters; tolmax = 1e-10, maxiter = 100)
     @unpack n = p
 
     @inbounds u0 = reshape(Ψ0[3:(n - 1), 3:(n - 1)], (n - 3) * (n - 3))
 
-    _, iter, tol = newton(f!, u0, p)
+    _, iter, tol = newton(f!, u0, p; tolmax = 1e-10, maxiter = 100)
 
     construct_BC!(p)
 
-    return p.Ψ, iter, tol
+    return copy(p.Ψ), iter, tol
 end
 
 function solve_timestepping(Ψstart, p::CavityParameters, Δt, nb_timesteps)
@@ -15,18 +15,17 @@ function solve_timestepping(Ψstart, p::CavityParameters, Δt, nb_timesteps)
 
     @inbounds Ψ0 .= Ψstart
     @inbounds u0 = reshape(Ψstart[3:(n - 1), 3:(n - 1)], (n - 3) * (n - 3))
-    fu = similar(u0)
 
     ft!(fu, u, p) = ftime!(fu, u, p, Δt)
 
     for step in 1:nb_timesteps
         u0, iter, tol = newton(ft!, u0, p)
 
+        # println("Step $(step): $(iter) iterations")
+
         Ψ[3:(n - 1), 3:(n - 1)] .= reshape(u0, (n - 3, n - 3))
 
         Ψ0 .= Ψ
-
-        time = [(Δt * step)]
     end
 
     construct_BC!(p)
@@ -63,25 +62,29 @@ function solve_timestepping_save(Ψstart, p::CavityParameters, Δt, steps)
     return sol, time_series
 end
 
-function solve_continuation(Ψ0, p::CavityParameters, Re_start, ΔRe, steps)
-    @unpack n, scl = p
+function solve_continuation(Ψstart, p::CavityParameters, Re_start, ΔRe, steps)
+    @unpack n, scl, Ψ = p
 
     p.Re = Re_start
-    @inbounds u0 = reshape(Ψ0[3:(n - 1), 3:(n - 1)], (n - 3) * (n - 3))
+    @inbounds Ψ .= Ψstart
+    @inbounds u0 = reshape(Ψ[3:(n - 1), 3:(n - 1)], (n - 3) * (n - 3))
     u1, _, _ = newton(f!, u0, p)
     u1 = [u1; p.Re / scl]
+    Ψ1 = construct_BC(p)
 
     p.Re = Re_start + ΔRe
     u2, _, _ = newton(f!, u0, p)
     u2 = [u2; p.Re / scl]
+    Ψ2 = construct_BC(p)
 
     s = norm(u2 - u1)
 
-    sol = Vector{typeof(u0)}(undef, steps)
-    Re_series = Vector{typeof(u0[1])}(undef, steps)
+    sol = Vector{typeof(Ψstart)}(undef, steps)
+    Re_series = Vector{Float64}(undef, steps)
 
-    sol[1] = u1
-    sol[2] = u2
+    sol[1] = Ψ1
+    sol[2] = Ψ2
+
     Re_series[1] = Re_start
     Re_series[2] = Re_start + ΔRe
 
@@ -91,15 +94,19 @@ function solve_continuation(Ψ0, p::CavityParameters, Re_start, ΔRe, steps)
         u1 = u2
         u2 = u
 
-        sol[i + 2] = u
         Re_series[i + 2] = u[end] * p.scl
+        p.Re = Re_series[i + 2]
+
+        sol[i + 2] = construct_BC(p)
     end
 
     return sol, Re_series
 end
 
-function newton_continuation(f!, x1, x2, s, p; tolmax = 1e-10, maxiter = 100)
+function newton_continuation(f!::F, x1, x2, s, p; tolmax = 1e-10, maxiter = 100) where {F}
     x = copy(x2)
+    xi = x[1:(end - 1)]
+
     dim = size(x, 1) - 1
 
     eps = 1e-8
@@ -114,7 +121,7 @@ function newton_continuation(f!, x1, x2, s, p; tolmax = 1e-10, maxiter = 100)
     J2 = zeros(dim + 1, dim + 1)
 
     dx = zeros(dim + 1)
-    cache = FiniteDiff.JacobianCache(x)
+    cache = FiniteDiff.JacobianCache(xi)
 
     iter = 0
     tol = 1.0
@@ -128,8 +135,8 @@ function newton_continuation(f!, x1, x2, s, p; tolmax = 1e-10, maxiter = 100)
         fx[1:(end - 1)] = fxi
         fx[end] = v' * (x - xp)
 
-        # FiniteDiff.finite_difference_jacobian!(J, (fx, x) -> f!(fx, x, p), xi, cache; absstep = eps)
-        jacobian!(J, f!, xi, p; dx = eps)
+        FiniteDiff.finite_difference_jacobian!(J, (fxi, xi) -> f!(fxi, xi, p), xi, cache)
+        # jacobian!(J, f!, xi, p; dx = eps)
 
         J2[1:dim, 1:dim] = J
 
@@ -163,9 +170,12 @@ function newton(f!, x0, p; tolmax = 1e-10, maxiter = 100)
 
     iter = 0
     tol = 1.0
+
+    f1!(fx, x) = f!(fx, x, p)
+
     while tol > tolmax && iter < maxiter
-        FiniteDiff.finite_difference_jacobian!(J, (fx, x) -> f!(fx, x, p), x, cache)
-        # jacobian!(J, f!, x, p; dx = 1e-8)
+        FiniteDiff.finite_difference_jacobian!(J, f1!, x, cache)
+        # jacobian!(J, f1!, x; dx = 1e-8)
 
         dx .= J \ (-fx)
         @. x = x + dx
@@ -179,17 +189,34 @@ function newton(f!, x0, p; tolmax = 1e-10, maxiter = 100)
     return x, iter, tol
 end
 
-function jacobian!(J, f!, x, p; dx = 1e-8)
+function jacobian!(J, f!, x; dx = 1e-8)
     dim = size(x, 1)
 
     Id = I(dim) * dx
 
-    f1 = similar(x)
-    f2 = similar(x)
-    f!(f1, x, p)
+    fx1 = similar(x)
+    fx2 = similar(x)
+    f!(fx1, x)
 
-    for m in 1:dim
-        f!(f2, x + Id[:, m], p)
-        J[:, m] = (f2 - f1) / Id[m, m]
+    @inbounds for m in 1:dim
+        f!(fx2, x + Id[:, m])
+        J[:, m] = @. (fx2 - fx1) / dx
     end
 end
+
+# Non allocating version
+# function jacobian!(J, f!, x, xm, fx1, fx2; dx = 1e-8)
+#     dim = size(x, 1)
+#
+#     f!(fx1, x)
+#     xm .= x
+#
+#     @inbounds @simd for m in 1:dim
+#         xm[m] = xm[m] + dx 
+#
+#         f!(fx2, xm)
+#         J[:, m] = @. (fx2 - fx1) / dx 
+#
+#         xm[m] = xm[m] - dx 
+#     end
+# end
