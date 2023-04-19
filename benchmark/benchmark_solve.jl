@@ -3,7 +3,6 @@ using BenchmarkTools
 using DelimitedFiles
 using FiniteDiff
 using Random
-gr()
 
 Random.seed!(1234)
 
@@ -13,7 +12,10 @@ Re = 100
 
 p = CF.setup_params(n, Re)
 
-Ψ0 = readdlm("$(n)x$(n)_initial_guess_Re$(Re).txt")
+filename =  "$(n)x$(n)_initial_guess_Re$(Re).txt"
+filepath = joinpath(@__DIR__, filename)
+
+Ψ0 = readdlm(filepath)
 
 u0 = reshape(Ψ0[3:(n - 1), 3:(n - 1)], (n - 3) * (n - 3))
 fu0 = similar(u0)
