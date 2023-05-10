@@ -20,7 +20,7 @@
         @test p.nodes ≈ nodes_ref
         @test p.D1 ≈ D1_ref
     end
-    @testset "constructBC!" begin
+    @testset "construct_BC!" begin
         # Test boundary reconstruction of Ψ when imposing derivatives at boundary
         Ψf(x, y) = @. sin(π * (x - 1) / 2) * sin(π * (y - 1) / 2)
         DΨx(x, y) = @. π / 2 * cos(π * (x - 1) / 2) * sin(π * (y - 1) / 2)
@@ -42,12 +42,33 @@
 
         Ψexact = [Ψf(x, y) for x in p.nodes, y in p.nodes]
 
-        Ψ = zeros(n + 1, n + 1)
+        p.Ψ = zeros(n + 1, n + 1)
         p.Ψ[3:(n - 1), 3:(n - 1)] = Ψexact[3:(n - 1), 3:(n - 1)]
 
         CavityFlow.construct_BC!(p)
 
         @test p.Ψ≈Ψexact atol=1e-6
+    end
+    @testset "construct_homogenous_BC!" begin
+        n = 6
+        Re = 100
+        p = CavityFlow.setup_params(n, Re)
+
+        u = ones((n - 3) * (n - 3))
+        p.Ψ .= zeros(n + 1, n + 1)
+        p.Ψ[3:(n - 1), 3:(n - 1)] = reshape(u, (n - 3, n - 3))
+
+        CavityFlow.construct_homogenous_BC!(p)
+
+        Ψref = [0 0 0 0 0 0 0
+                0 0.043402777777778 0.208333333333333 0.208333333333333 0.208333333333333 0.043402777777778 0
+                0 0.208333333333333 1.000000000000000 1.000000000000000 1.000000000000000 0.208333333333333 0
+                0 0.208333333333333 1.000000000000000 1.000000000000000 1.000000000000000 0.208333333333333 0
+                0 0.208333333333333 1.000000000000000 1.000000000000000 1.000000000000000 0.208333333333333 0
+                0 0.043402777777778 0.208333333333333 0.208333333333333 0.208333333333333 0.043402777777778 0
+                0 0 0 0 0 0 0]
+
+        @test p.Ψ ≈ Ψref
     end
     @testset "f!" begin
         # Test right-hand-side function of equation for streamfunction 

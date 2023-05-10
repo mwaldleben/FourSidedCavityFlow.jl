@@ -1,0 +1,111 @@
+function f_linearstability!(fu, p::CavityParameters)
+    @unpack Re, n, D1, D2, D4, fΨ, Ψ, Ψ0, D2Ψ, ΨD2, D4Ψ, ΨD4, laplΨ, biharmΨ, laplΨ = p
+
+    # Ψ0
+    D1Ψ0 = similar(Ψ)
+    Ψ0D1 = similar(Ψ)
+    D2Ψ0 = similar(Ψ)
+    Ψ0D2 = similar(Ψ)
+    laplΨ0 = similar(Ψ)
+    D1laplΨ0 = similar(Ψ)
+    laplΨ0D1 = similar(Ψ)
+
+    mul!(D1Ψ0, D1, Ψ0)
+    mul!(Ψ0D1, Ψ0, D1')
+
+    mul!(D2Ψ0, D2, Ψ0)
+    mul!(Ψ0D2, Ψ0, D2')
+    @inbounds @. laplΨ0 = D2Ψ0 + Ψ0D2
+
+    mul!(D1laplΨ0, D1, laplΨ0)
+    mul!(laplΨ0D1, laplΨ0, D1')
+
+    # Ψ
+    D1Ψ = similar(Ψ)
+    ΨD1 = similar(Ψ)
+    D1laplΨ = similar(Ψ)
+    laplΨD1 = similar(Ψ)
+
+    mul!(D1Ψ, D1, Ψ)
+    mul!(ΨD1, Ψ, D1')
+
+    mul!(D2Ψ, D2, Ψ)
+    mul!(ΨD2, Ψ, D2')
+    @inbounds @. laplΨ = D2Ψ + ΨD2
+
+    mul!(D1laplΨ, D1, laplΨ)
+    mul!(laplΨD1, laplΨ, D1')
+
+    mul!(D4Ψ, D4, Ψ)
+    mul!(ΨD4, Ψ, D4')
+    mul!(laplΨ, D2Ψ, D2') # using as intermediate memory
+    @inbounds @. biharmΨ = D4Ψ + ΨD4 + 2 * laplΨ
+
+    # TODO: fix stream function formulation, problem with linebreak as well
+    # @inbounds @. fΨ = (1 / Re) * biharmΨ + D1Ψ0 * laplΨD1 
+    # + D1Ψ * laplΨ0D1 - Ψ0D1 * D1laplΨ - ΨD1 * D1laplΨ0 
+    # @inbounds @. fΨ = (1 / Re) * biharmΨ - D1Ψ0 * laplΨD1 - D1Ψ * laplΨ0D1 + Ψ0D1 * D1laplΨ + ΨD1 * D1laplΨ0 
+    @inbounds @. fΨ = (1 / Re) * biharmΨ - (D1Ψ0 .* laplΨD1 - Ψ0D1 .* D1laplΨ) -
+                      (D1Ψ .* laplΨ0D1 - ΨD1 .* D1laplΨ0)
+
+    @inbounds @views fu .= fΨ[3:(n - 1), 3:(n - 1)][:]
+
+    return nothing
+end
+
+function linearstability_matrices!(A, B, u, p)
+    @unpack Re, n, D2, Ψ, Ψ0, D2Ψ, ΨD2, laplΨ = p
+
+    @inbounds @views Ψ[3:(n - 1), 3:(n - 1)][:] .= u
+    construct_BC!(p)
+    Ψ0 .= Ψ
+
+    fu = similar(u)
+    for i in 1:(n - 3)
+        for j in 1:(n - 3)
+            p.Ψ = zeros(n + 1, n + 1)
+            p.Ψ[i + 2, j + 2] = 1.0
+
+            construct_homogenous_BC!(p)
+            f_linearstability!(fu, p)
+            k = (j - 1) * (n - 3) + i
+            @views A[:, k] .= fu
+
+            mul!(D2Ψ, D2, p.Ψ)
+            mul!(ΨD2, p.Ψ, D2')
+            @inbounds @. laplΨ = D2Ψ + ΨD2
+            @views B[:, k] .= laplΨ[3:(n - 1), 3:(n - 1)][:]
+        end
+    end
+
+    return nothing
+end
+
+function linearstability_lambdas!(lambdas_real, u, p)
+    @unpack Re, n = p
+
+    dim = (n - 3) * (n - 3)
+    A = zeros(dim, dim)
+    B = zeros(dim, dim)
+
+    linearstability_matrices!(A, B, u, p)
+
+    vals, vecs = eigen(A, B) # generalized eigenvalues
+    lambdas_real .= sort(real(vals), rev = true)
+end
+
+function linearstability_lambdamax(Re, u, p)
+    @unpack n, Ψ = p
+
+    dim = (n - 3) * (n - 3)
+    A = zeros(dim, dim)
+    B = zeros(dim, dim)
+
+    p.Re = Re
+    linearstability_matrices!(A, B, u, p)
+
+    vals, _ = eigen(A, B) # generalized eigenvalues
+    λmax = sort(real(vals), rev = true)[1]
+
+    return λmax
+end

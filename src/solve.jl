@@ -21,8 +21,6 @@ function solve_timestepping(Ψstart, p::CavityParameters, Δt, nb_timesteps)
     for step in 1:nb_timesteps
         u0, iter, tol = newton(ft!, u0, p)
 
-        # println("Step $(step): $(iter) iterations")
-
         Ψ[3:(n - 1), 3:(n - 1)] .= reshape(u0, (n - 3, n - 3))
 
         Ψ0 .= Ψ
@@ -49,11 +47,10 @@ function solve_timestepping_save(Ψstart, p::CavityParameters, Δt, steps)
     time_series[1] = 0
 
     for i in 1:(steps - 1)
-        u0, _, _ = newton(ft!, u0, p)
+        u0, iter, tol = newton(ft!, u0, p)
 
         Ψ[3:(n - 1), 3:(n - 1)] .= reshape(u0, (n - 3, n - 3))
         construct_BC!(p)
-        Ψ0 .= Ψ
 
         sol[i + 1] = Ψ
         time_series[i + 1] = Δt * i
@@ -62,7 +59,8 @@ function solve_timestepping_save(Ψstart, p::CavityParameters, Δt, steps)
     return sol, time_series
 end
 
-function solve_continuation(Ψstart, p::CavityParameters, Re_start, ΔRe, steps)
+function solve_continuation(Ψstart, p::CavityParameters, Re_start, ΔRe, steps;
+                            linearstability = false)
     @unpack n, scl, Ψ = p
 
     p.Re = Re_start
@@ -88,18 +86,33 @@ function solve_continuation(Ψstart, p::CavityParameters, Re_start, ΔRe, steps)
     Re_series[1] = Re_start
     Re_series[2] = Re_start + ΔRe
 
-    for i in 1:(steps - 2)
+    if linearstability == true
+        lambdas = Vector{typeof(u1[1:(end - 1)])}(undef, steps)
+
+        lambdas[1] = linearstability_lambdas(u1[1:(end - 1)], p)
+        lambdas[2] = linearstability_lambdas(u2[1:(end - 1)], p)
+    end
+
+    for i in 3:(steps)
         u, _, _ = newton_continuation(f!, u1, u2, s, p)
 
         u1 = u2
         u2 = u
 
-        Re_series[i + 2] = u[end] * p.scl
-        p.Re = Re_series[i + 2]
+        if linearstability == true
+            lambdas[i] = linearstability_lambdas(u[1:(end - 1)], p)
+        end
 
-        sol[i + 2] = construct_BC(p)
+        Re_series[i] = u[end] * p.scl
+        p.Re = Re_series[i]
+
+        @inbounds @views p.Ψ[3:(n - 1), 3:(n - 1)][:] .= u[1:(end - 1)]
+        sol[i] = construct_BC(p)
     end
 
+    if linearstability == true
+        return sol, lambdas, Re_series
+    end
     return sol, Re_series
 end
 
@@ -157,6 +170,69 @@ function newton_continuation(f!::F, x1, x2, s, p; tolmax = 1e-10, maxiter = 100)
     return x, iter, tol
 end
 
+function newton1D_linearstability(Re0, u0, p; tolmax = 1e-8, maxiter = 20)
+    @unpack n, Ψ, scl = p
+
+    Re = Re0
+    x = Re0 / scl
+
+    u = copy(u0)
+
+    iter = 0
+    tol = 1.0
+
+    while tol > tolmax && iter < maxiter
+        # Refine solution for new Reynolds number
+        p.Re = Re
+        u, _, _ = CavityFlow.newton(f!, u, p)
+        fx = linearstability_lambdamax(Re, u, p)
+
+        # Fixed step size!
+        x1 = x + 1e-8
+        Re1 = x1 * scl
+
+        # Refine solution for step
+        p.Re = Re1
+        u1, _, _ = CavityFlow.newton(f!, u, p)
+        fx1 = linearstability_lambdamax(Re1, u1, p)
+
+        dfx = (fx1 - fx) / 1e-8
+
+        dx = -fx / dfx
+        x = x + dx
+        Re = x * scl
+
+        tol = abs(dx)
+        iter += 1
+    end
+
+    return Re, iter, tol
+end
+
+function newton1D(f, x0, p, tolmax = 1e-10, maxiter = 100)
+    x = x0
+
+    iter = 0
+    tol = 1.0
+
+    while tol > tolmax && iter < maxiter
+        fx = f(x, p)
+
+        # Fixed step size!
+        x1 = x + 1e-8
+        fx1 = f(x1, p)
+        dfx = (fx1 - fx) / 1e-8
+
+        dx = -fx / dfx
+        x = x + dx
+
+        tol = abs(dx)
+        iter += 1
+    end
+
+    return x, iter, tol
+end
+
 function newton(f!, x0, p; tolmax = 1e-10, maxiter = 100)
     x = copy(x0)
     dim = size(x, 1)
@@ -203,20 +279,3 @@ function jacobian!(J, f!, x; dx = 1e-8)
         J[:, m] = @. (fx2 - fx1) / dx
     end
 end
-
-# Non allocating version
-# function jacobian!(J, f!, x, xm, fx1, fx2; dx = 1e-8)
-#     dim = size(x, 1)
-#
-#     f!(fx1, x)
-#     xm .= x
-#
-#     @inbounds @simd for m in 1:dim
-#         xm[m] = xm[m] + dx 
-#
-#         f!(fx2, xm)
-#         J[:, m] = @. (fx2 - fx1) / dx 
-#
-#         xm[m] = xm[m] - dx 
-#     end
-# end

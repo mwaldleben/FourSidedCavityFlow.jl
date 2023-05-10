@@ -35,6 +35,28 @@ function construct_BC(p)
     return copy(p.Ψ)
 end
 
+function construct_homogenous_BC!(p)
+    @unpack n, Ψ, D1, m11, m12, m21, m22, bcleft, bcright, bctop, bcbottom, h1, h2, k1, k2 = p
+
+    @inbounds @views Ψ1 = Ψ[3:(n - 1), 3:(n - 1)]
+    @inbounds @views Ψ2 = Ψ[3:(n - 1), 2:n]'
+    @inbounds @views Dcs = D1[1, 3:(n - 1)]
+    @inbounds @views Dce = D1[n + 1, 3:(n - 1)]
+
+    mul!(h1, Ψ1, Dcs)
+    mul!(h2, Ψ1, Dce)
+
+    @inbounds @views @. Ψ[3:(n - 1), 2] = -m11 * h1 - m12 * h2
+    @inbounds @views @. Ψ[3:(n - 1), n] = -m21 * h1 - m22 * h2
+
+    mul!(k1, Ψ2, Dcs)
+    mul!(k2, Ψ2, Dce)
+
+    @inbounds @views @. Ψ[2, 2:n] = -m11 * k1 - m12 * k2
+    @inbounds @views @. Ψ[n, 2:n] = -m21 * k1 - m22 * k2
+    return nothing
+end
+
 function f!(fu, u, p::CavityParameters)
     @unpack Re, n, D1, D2, D4, fΨ, Ψ, D2Ψ, ΨD2, D4Ψ, ΨD4, laplΨ, biharmΨ = p
 

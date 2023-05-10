@@ -86,20 +86,49 @@
         ]
         @test x≈x_ref atol=1e-2
     end
+    @testset "newton_linearstability" begin
+        n = 8
+        dim = (n - 3) * (n - 3)
+        Re0 = 66
+        p = CavityFlow.setup_params(n, Re0)
+
+        Ψ0 = zeros(n + 1, n + 1)
+        Ψsteady, iter, tol = CavityFlow.solve_steadystate(Ψ0, p)
+
+        u0 = Ψsteady[3:(n - 1), 3:(n - 1)][:]
+
+        Re, iter, tol = CavityFlow.newton1D_linearstability(Re0, u0, p; tolmax = 1e-8,
+                                                            maxiter = 20)
+
+        Re_ref = 68.943470270431973
+
+        @test Re≈Re_ref atol=1e-8
+    end
+    @testset "newton1D" begin
+        function f(x, p)
+            return p * x^3
+        end
+
+        p = 1
+        x0 = 1.0
+        x, iter, tol = CavityFlow.newton1D(f, x0, p)
+
+        @test x≈0.0 atol=1e-7
+    end
     @testset "newton" begin
-        function fnewton!(fx, x, p)
+        function f!(fx, x, p)
             @. fx = p * x^3
         end
 
         n = 3
         p = 1
         x0 = ones(n)
-        x, iter, tol = CavityFlow.newton(fnewton!, x0, p)
+        x, iter, tol = CavityFlow.newton(f!, x0, p)
 
         @test x≈zeros(n) atol=1e-7
     end
     @testset "jacobian!" begin
-        function fjac!(fx, x)
+        function f!(fx, x)
             @. fx = x^2
         end
 
@@ -108,7 +137,7 @@
         x = ones(n)
         J_ref = 2 * I(n)
         J = zeros(n, n)
-        CavityFlow.jacobian!(J, fjac!, x)
+        CavityFlow.jacobian!(J, f!, x)
 
         @test J≈J_ref atol=1e-7
     end

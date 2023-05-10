@@ -5,3 +5,4 @@ using Test
 include("test_differentiation.jl")
 include("test_cavity.jl")
 include("test_solve.jl")
+include("test_linearstability.jl")

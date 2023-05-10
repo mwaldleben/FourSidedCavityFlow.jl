@@ -8,5 +8,6 @@ include("typedefs.jl")
 include("differentiation.jl")
 include("cavity.jl")
 include("solve.jl")
+include("linearstability.jl")
 
 end
