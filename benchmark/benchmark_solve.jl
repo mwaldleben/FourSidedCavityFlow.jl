@@ -12,7 +12,7 @@ Re = 100
 
 p = CF.setup_params(n, Re)
 
-filename =  "$(n)x$(n)_initial_guess_Re$(Re).txt"
+filename = "$(n)x$(n)_initial_guess_Re$(Re).txt"
 filepath = joinpath(@__DIR__, filename)
 
 Ψ0 = readdlm(filepath)

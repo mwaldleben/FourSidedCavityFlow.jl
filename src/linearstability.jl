@@ -109,3 +109,42 @@ function linearstability_lambdamax(Re, u, p)
 
     return λmax
 end
+
+function newton1D_for_linearstability(Re0, u0, p; tolmax = 1e-8, maxiter = 20)
+    @unpack n, Ψ, scl = p
+
+    Re = Re0
+    x = Re0 / scl
+
+    u = copy(u0)
+
+    iter = 0
+    tol = 1.0
+
+    while tol > tolmax && iter < maxiter
+        # Refine solution for new Reynolds number
+        p.Re = Re
+        u, _, _ = CavityFlow.newton(f!, u, p)
+        fx = linearstability_lambdamax(Re, u, p)
+
+        # Fixed step size!
+        x1 = x + 1e-8
+        Re1 = x1 * scl
+
+        # Refine solution for step
+        p.Re = Re1
+        u1, _, _ = CavityFlow.newton(f!, u, p)
+        fx1 = linearstability_lambdamax(Re1, u1, p)
+
+        dfx = (fx1 - fx) / 1e-8
+
+        dx = -fx / dfx
+        x = x + dx
+        Re = x * scl
+
+        tol = abs(dx)
+        iter += 1
+    end
+
+    return Re, iter, tol
+end

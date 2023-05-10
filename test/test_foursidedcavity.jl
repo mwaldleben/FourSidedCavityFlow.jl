@@ -1,4 +1,4 @@
-@testset "cavity.jl" begin
+@testset "foursidedcavity.jl" begin
     @testset "construct_BC_matrix" begin
         # Test constructBCMatrix
         #nodes = [1; 1/2; -1/2; -1] 

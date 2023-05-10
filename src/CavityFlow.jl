@@ -4,10 +4,11 @@ using LinearAlgebra
 using FiniteDiff
 using UnPack
 
-include("typedefs.jl")
 include("differentiation.jl")
-include("cavity.jl")
-include("solve.jl")
+include("newtonraphson.jl")
+include("foursidedcavity.jl")
+include("steadystate.jl")
+include("timestepping.jl")
 include("linearstability.jl")
 
 end

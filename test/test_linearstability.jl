@@ -93,4 +93,22 @@
         @test λ ≈ λref
         @test λmax ≈ λref[1]
     end
+    @testset "newton1D_for_linearstability" begin
+        n = 8
+        dim = (n - 3) * (n - 3)
+        Re0 = 66
+        p = CavityFlow.setup_params(n, Re0)
+
+        Ψ0 = zeros(n + 1, n + 1)
+        Ψsteady, iter, tol = CavityFlow.steadystate(Ψ0, p)
+
+        u0 = Ψsteady[3:(n - 1), 3:(n - 1)][:]
+
+        Re, iter, tol = CavityFlow.newton1D_for_linearstability(Re0, u0, p; tolmax = 1e-8,
+                                                                maxiter = 20)
+
+        Re_ref = 68.943470270431973
+
+        @test Re ≈ Re_ref
+    end
 end
