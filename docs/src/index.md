@@ -1,13 +1,13 @@
-# CavityFlow.jl Documentation
+# FourSidedCavityFlow.jl Documentation
 
 ```@meta
-CurrentModule = CavityFlow
+CurrentModule = FourSidedCavityFlow
 DocTestSetup = quote
-    using CavityFlow 
+    using FourSidedCavityFlow 
 end
 ```
 
 ```@autodocs
-Modules = [CavityFlow]
+Modules = [FourSidedCavityFlow]
 ```
 

@@ -3,19 +3,19 @@
         # Test nonlinear operator of generalized eigenvalue problem
         n = 6
         Re = 100
-        p = CavityFlow.setup_params(n, Re)
+        p = CF.setup_params(n, Re)
 
         u = ones((n - 3) * (n - 3))
         fu = similar(u)
         @inbounds @views p.Ψ[3:(n - 1), 3:(n - 1)][:] .= u
-        CavityFlow.construct_BC!(p)
+        CF.construct_BC!(p)
         p.Ψ0 .= p.Ψ
 
         p.Ψ = zeros(n + 1, n + 1)
         p.Ψ[3, 3] = 1.0
-        CavityFlow.construct_homogenous_BC!(p)
+        CF.construct_homogenous_BC!(p)
 
-        CavityFlow.f_linearstability!(fu, p)
+        CF.f_linearstability!(fu, p)
 
         fu_ref = [16.579816326404938
                   76.437561827493312
@@ -33,14 +33,14 @@
         # Test creation of matrices A, B for the generalized eigenvalue problem
         n = 6
         Re = 100
-        p = CavityFlow.setup_params(n, Re)
+        p = CF.setup_params(n, Re)
 
         dim = (n - 3) * (n - 3)
         u = ones(dim)
         A = zeros(dim, dim)
         B = zeros(dim, dim)
 
-        CavityFlow.linearstability_matrices!(A, B, u, p)
+        CF.linearstability_matrices!(A, B, u, p)
 
         Aref = [16.5798163264049 -102.42102244062 61.924711480879 75.6207637841028 5.28708755676325 -5.61987168432635 -47.76052684122 2.63012831567366 0.364411856336849
                 76.4375618274933 8.02666666666673 -83.7699075065057 -12.8219195766347 -3.24000000000003 14.9552529099681 2.27945236917951 0.746666666666672 -2.65871162843876
@@ -69,7 +69,7 @@
         # Test creation of matrices A, B for the generalized eigenvalue problem
         n = 6
         Re = 100
-        p = CavityFlow.setup_params(n, Re)
+        p = CF.setup_params(n, Re)
 
         dim = (n - 3) * (n - 3)
         u = ones(dim)
@@ -77,8 +77,8 @@
         A = zeros(dim, dim)
         B = zeros(dim, dim)
 
-        CavityFlow.linearstability_lambdas!(λ, u, p)
-        λmax = CavityFlow.linearstability_lambdamax(Re, u, p)
+        CF.linearstability_lambdas!(λ, u, p)
+        λmax = CF.linearstability_lambdamax(Re, u, p)
 
         λref = [-0.135715953331695
                 -0.214138856818600
@@ -97,14 +97,14 @@
         n = 8
         dim = (n - 3) * (n - 3)
         Re0 = 66
-        p = CavityFlow.setup_params(n, Re0)
+        p = CF.setup_params(n, Re0)
 
         Ψ0 = zeros(n + 1, n + 1)
-        Ψsteady, iter, tol = CavityFlow.steadystate(Ψ0, p)
+        Ψsteady, iter, tol = CF.steadystate(Ψ0, p)
 
         u0 = Ψsteady[3:(n - 1), 3:(n - 1)][:]
 
-        Re, iter, tol = CavityFlow.newton1D_for_linearstability(Re0, u0, p; tolmax = 1e-8,
+        Re, iter, tol = CF.newton1D_for_linearstability(Re0, u0, p; tolmax = 1e-8,
                                                                 maxiter = 20)
 
         Re_ref = 68.943470270431973

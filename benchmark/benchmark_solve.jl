@@ -1,4 +1,4 @@
-import CavityFlow as CF
+import FourSidedCavityFlow as CF
 using BenchmarkTools
 using DelimitedFiles
 using FiniteDiff
@@ -33,4 +33,4 @@ display(@benchmark CF.jacobian!(J, f1!, u0))
 display(@benchmark FiniteDiff.finite_difference_jacobian!(J, f1!, u0, cache))
 
 ##### Benchmark solve #####
-display(@benchmark CF.solve_steadystate(Ψ0, p))
+display(@benchmark CF.steadystate(Ψ0, p))

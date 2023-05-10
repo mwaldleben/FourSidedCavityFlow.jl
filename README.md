@@ -1,8 +1,8 @@
-# CavityFlow.jl
+# FourSidedCavityFlow.jl
 
 Development of a Navier-Stokes benchmark solver for the four-sided cavity flow
-using spectral methods. The package is designed to be extensible to other
-discretizations and boundary conditions for the cavity flow problem. 
+using spectral methods. The package is designed to provide a reproducable
+example to compare discretizations and boundary conditions. 
 
 [![Documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://morwald.github.io/CavityFlow.jl)
 [![Build Status](https://github.com/morwald/CavityFlow.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/morwald/CavityFlow.jl/actions/workflows/CI.yml?query=branch%3Amain)
@@ -24,19 +24,19 @@ required to obtain accurate results.
 
 ## Installation
 
-### To try the examples
+### To run the results
 
-The `examples` folder shows how one would go about using this module. The
-README inside the folder contains the necessary information to run the
-examples.
+The `studies` folder provides scripts to generate results and images for the
+problem. The README inside the folder contains the necessary information to run
+the simulations.
 
 ### For development
 
 The Julia module is not yet a registered package. To work on the development
 version clone this git repository. Navigate to the root directory and start the Julia REPL. 
 ```bash
-git clone git@github.com:morwald/CavityFlow.git
-cd CavityFlow.jl
+git clone git@github.com:morwald/FourSidedCavityFlow.git
+cd FourSidedCavityFlow.jl
 julia
 ```
 
@@ -53,4 +53,4 @@ pkg>test
 
 ## Documentation
 
-The development documentation can be found [here](https://morwald.github.io/CavityFlow.jl).
+The development documentation can be found [here](https://morwald.github.io/FourSidedCavityFlow.jl).

@@ -1,4 +1,4 @@
-module CavityFlow
+module FourSidedCavityFlow
 
 using LinearAlgebra
 using FiniteDiff

@@ -2,10 +2,10 @@
     @testset "steadystate" begin
         n = 6
         Re = 100
-        p = CavityFlow.setup_params(n, Re)
+        p = CF.setup_params(n, Re)
 
         Ψ0 = zeros(n + 1, n + 1)
-        Ψsteady, iter, tol = CavityFlow.steadystate(Ψ0, p)
+        Ψsteady, iter, tol = CF.steadystate(Ψ0, p)
 
         Ψsteady_ref = [0 0 0 0 0 0 0
                        0 0.0223534291102081 0.0655941971343996 0.0589510766581025 0.0555732229353761 0.0204248917264253 0

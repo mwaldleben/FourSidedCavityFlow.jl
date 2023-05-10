@@ -124,7 +124,7 @@ function newton1D_for_linearstability(Re0, u0, p; tolmax = 1e-8, maxiter = 20)
     while tol > tolmax && iter < maxiter
         # Refine solution for new Reynolds number
         p.Re = Re
-        u, _, _ = CavityFlow.newton(f!, u, p)
+        u, _, _ = newton(f!, u, p)
         fx = linearstability_lambdamax(Re, u, p)
 
         # Fixed step size!
@@ -133,7 +133,7 @@ function newton1D_for_linearstability(Re0, u0, p; tolmax = 1e-8, maxiter = 20)
 
         # Refine solution for step
         p.Re = Re1
-        u1, _, _ = CavityFlow.newton(f!, u, p)
+        u1, _, _ = newton(f!, u, p)
         fx1 = linearstability_lambdamax(Re1, u1, p)
 
         dfx = (fx1 - fx) / 1e-8

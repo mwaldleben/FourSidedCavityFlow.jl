@@ -1,4 +1,4 @@
-using CavityFlow
+import FourSidedCavityFlow as CF
 using LinearAlgebra
 using Test
 

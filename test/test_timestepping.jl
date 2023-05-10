@@ -2,13 +2,13 @@
     @testset "timestepping" begin
         n = 6
         Re = 100
-        p = CavityFlow.setup_params(n, Re)
+        p = CF.setup_params(n, Re)
 
         Δt = 1
         steps = 200
         Ψ0 = ones((n + 1, n + 1))
 
-        Ψ200 = CavityFlow.timestepping(Ψ0, p, Δt, steps)
+        Ψ200 = CF.timestepping(Ψ0, p, Δt, steps)
 
         Ψ200_ref = [0 0 0 0 0 0 0
                     0 0.0223534291102081 0.0655941971343996 0.0589510766581025 0.0555732229353761 0.0204248917264253 0

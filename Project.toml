@@ -1,4 +1,4 @@
-name = "CavityFlow"
+name = "FourSidedCavityFlow"
 uuid = "81d71bd7-5196-4e79-91c4-f38e47c336fb"
 authors = ["Moritz Waldleben <moritz.waldleben@gmail.com> and contributors"]
 version = "0.1.0"
@@ -9,8 +9,8 @@ LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 UnPack = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
 
 [compat]
-UnPack = "1"
 FiniteDiff = "2"
+UnPack = "1"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

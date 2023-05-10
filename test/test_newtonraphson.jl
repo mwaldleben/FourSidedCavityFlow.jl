@@ -6,7 +6,7 @@
 
         p = 1
         x0 = 1.0
-        x, iter, tol = CavityFlow.newton1D(f, x0, p)
+        x, iter, tol = CF.newton1D(f, x0, p)
 
         @test x≈0.0 atol=1e-7
     end
@@ -18,7 +18,7 @@
         n = 3
         p = 1
         x0 = ones(n)
-        x, iter, tol = CavityFlow.newton(f!, x0, p)
+        x, iter, tol = CF.newton(f!, x0, p)
 
         @test x≈zeros(n) atol=1e-7
     end
@@ -32,7 +32,7 @@
         x = ones(n)
         J_ref = 2 * I(n)
         J = zeros(n, n)
-        CavityFlow.jacobian!(J, f!, x)
+        CF.jacobian!(J, f!, x)
 
         @test J≈J_ref atol=1e-7
     end

@@ -2,14 +2,14 @@
     @testset "continuation" begin
         n = 6
         Re = 100
-        p = CavityFlow.setup_params(n, Re)
+        p = CF.setup_params(n, Re)
 
         Ψ0 = zeros((n + 1, n + 1))
 
         Re_start = Re
         ΔRe = -1
         steps = 7
-        sol, Re_series = CavityFlow.continuation_arclength(Ψ0, p, Re_start, ΔRe, steps)
+        sol, Re_series = CF.continuation_arclength(Ψ0, p, Re_start, ΔRe, steps)
 
         Ψ_ref = [0 0 0 0 0 0 0
                  0 0.022395922147029 0.066044664922850 0.059511890031364 0.055490465905256 0.020364765599066 0
@@ -24,14 +24,14 @@
     @testset "newton_for_continuation" begin
         n = 6
         Re = 100
-        p = CavityFlow.setup_params(n, Re)
+        p = CF.setup_params(n, Re)
 
         # Augmented system
         x1 = ones((n - 3) * (n - 3) + 1)
         x2 = 2 * ones((n - 3) * (n - 3) + 1)
         s = 0.05
 
-        x, iter, tol = CavityFlow.newton_for_continuation(CavityFlow.f!, x1, x2, s, p;
+        x, iter, tol = CF.newton_for_continuation(4SCF.f!, x1, x2, s, p;
                                                           tolmax = 1e-10, maxiter = 1)
         x_ref = [
             1.81433267406029,

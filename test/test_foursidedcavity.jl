@@ -5,14 +5,14 @@
         D = [19/6 -4 4/3 -1/2; 1 -1/3 -1 1/3; -1/3 1 1/3 -1; 1/2 -4/3 4 -19/6]
 
         Minvref = [-9 3; -3 9] / 32
-        Minv = CavityFlow.construct_BC_matrix(D)
+        Minv = CF.construct_BC_matrix(D)
         @test Minv ≈ Minvref
     end
 
     @testset "setup_params" begin
         n = 3
         Re = 100
-        p = CavityFlow.setup_params(n, Re)
+        p = CF.setup_params(n, Re)
 
         nodes_ref = [1; 1 / 2; -1 / 2; -1]
         D1_ref = [19/6 -4 4/3 -1/2; 1 -1/3 -1 1/3; -1/3 1 1/3 -1; 1/2 -4/3 4 -19/6]
@@ -33,7 +33,7 @@
 
         Re = 100
         n = 8
-        p = CavityFlow.setup_params(n, Re)
+        p = CF.setup_params(n, Re)
 
         p.bcleft = Ψbcleft(p.nodes)
         p.bcright = Ψbcright(p.nodes)
@@ -45,20 +45,20 @@
         p.Ψ = zeros(n + 1, n + 1)
         p.Ψ[3:(n - 1), 3:(n - 1)] = Ψexact[3:(n - 1), 3:(n - 1)]
 
-        CavityFlow.construct_BC!(p)
+        CF.construct_BC!(p)
 
         @test p.Ψ≈Ψexact atol=1e-6
     end
     @testset "construct_homogenous_BC!" begin
         n = 6
         Re = 100
-        p = CavityFlow.setup_params(n, Re)
+        p = CF.setup_params(n, Re)
 
         u = ones((n - 3) * (n - 3))
         p.Ψ .= zeros(n + 1, n + 1)
         p.Ψ[3:(n - 1), 3:(n - 1)] = reshape(u, (n - 3, n - 3))
 
-        CavityFlow.construct_homogenous_BC!(p)
+        CF.construct_homogenous_BC!(p)
 
         Ψref = [0 0 0 0 0 0 0
                 0 0.043402777777778 0.208333333333333 0.208333333333333 0.208333333333333 0.043402777777778 0
@@ -75,11 +75,11 @@
         # in cavity flow
         n = 6
         Re = 100
-        p = CavityFlow.setup_params(n, Re)
+        p = CF.setup_params(n, Re)
 
         u0 = zeros((n - 3) * (n - 3))
         fu = similar(u0)
-        CavityFlow.f!(fu, u0, p)
+        CF.f!(fu, u0, p)
 
         fu_ref = [
             -0.0624820681282460,
@@ -99,7 +99,7 @@
         # in cavity flow
         n = 6
         Re = 100
-        p = CavityFlow.setup_params(n, Re)
+        p = CF.setup_params(n, Re)
 
         u0 = zeros((n - 3) * (n - 3))
         p.Ψ0 = zeros(n + 1, n + 1)
@@ -107,7 +107,7 @@
 
         Δt = 1
 
-        CavityFlow.ftime!(fu, u0, p, Δt)
+        CF.ftime!(fu, u0, p, Δt)
         fu_ref = [
             -0.062482068128246,
             1.821383847328691,
