@@ -4,9 +4,9 @@ Development of a Navier-Stokes benchmark solver for the four-sided cavity flow
 using spectral methods. The package is designed to provide a reproducable
 example to compare discretizations and boundary conditions. 
 
-[![Documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://morwald.github.io/CavityFlow.jl)
-[![Build Status](https://github.com/morwald/CavityFlow.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/morwald/CavityFlow.jl/actions/workflows/CI.yml?query=branch%3Amain)
-[![Coverage](https://codecov.io/gh/morwald/CavityFlow.jl/branch/main/graph/badge.svg?token=ZLZMNKQSU2)](https://codecov.io/gh/morwald/CavityFlow.jl)
+[![Documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://morwald.github.io/FourSidedCavityFlow.jl)
+[![Build Status](https://github.com/morwald/FourSidedCavityFlow.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/morwald/FourSidedCavityFlow.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![Coverage](https://codecov.io/gh/morwald/FourSidedCavityFlow.jl/branch/main/graph/badge.svg?token=ZLZMNKQSU2)](https://codecov.io/gh/morwald/FourSidedCavityFlow.jl)
 
 
 ![cavity](./cavity.png)
