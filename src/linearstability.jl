@@ -94,6 +94,20 @@ function linearstability_lambdas!(lambdas_real, u, p)
     lambdas_real .= sort(real(vals), rev = true)
 end
 
+function linearstability_lambdas(u, p)
+    @unpack Re, n = p
+
+    dim = (n - 3) * (n - 3)
+    A = zeros(dim, dim)
+    B = zeros(dim, dim)
+
+    linearstability_matrices!(A, B, u, p)
+
+    vals, vecs = eigen(A, B) # generalized eigenvalues
+    lambdas_real = sort(real(vals), rev = true)
+    return lambdas_real
+end
+
 function linearstability_lambdamax(Re, u, p)
     @unpack n, Ψ = p
 
@@ -110,7 +124,7 @@ function linearstability_lambdamax(Re, u, p)
     return λmax
 end
 
-function newton1D_for_linearstability(Re0, u0, p; tolmax = 1e-8, maxiter = 20)
+function newton1D_for_linearstability(Re0, u0, p; tolmax = 1e-10, maxiter = 20, verbose = false)
     @unpack n, Ψ, scl = p
 
     Re = Re0
@@ -121,29 +135,39 @@ function newton1D_for_linearstability(Re0, u0, p; tolmax = 1e-8, maxiter = 20)
     iter = 0
     tol = 1.0
 
+    if verbose == true
+        @printf("  %-10s %-10s %-10s\n", "Newtonstep", "Re", "Time[s]")
+    end
+
     while tol > tolmax && iter < maxiter
-        # Refine solution for new Reynolds number
-        p.Re = Re
-        u, _, _ = newton(f!, u, p)
-        fx = linearstability_lambdamax(Re, u, p)
+        time = @elapsed begin 
+            # Refine solution for new Reynolds number
+            p.Re = Re
+            u, _, _ = newton(f!, u, p)
+            fx = linearstability_lambdamax(Re, u, p)
 
-        # Fixed step size!
-        x1 = x + 1e-8
-        Re1 = x1 * scl
+            # Fixed step size!
+            x1 = x + 1e-8
+            Re1 = x1 * scl
 
-        # Refine solution for step
-        p.Re = Re1
-        u1, _, _ = newton(f!, u, p)
-        fx1 = linearstability_lambdamax(Re1, u1, p)
+            # Refine solution for step
+            p.Re = Re1
+            u1, _, _ = newton(f!, u, p)
+            fx1 = linearstability_lambdamax(Re1, u1, p)
 
-        dfx = (fx1 - fx) / 1e-8
+            dfx = (fx1 - fx) / 1e-8
 
-        dx = -fx / dfx
-        x = x + dx
-        Re = x * scl
+            dx = -fx / dfx
+            x = x + dx
+            Re = x * scl
 
-        tol = abs(dx)
-        iter += 1
+            tol = abs(dx)
+            iter += 1
+        end
+
+        if verbose == true
+            @printf("  %-10d %-10.6f %-10.6f\n", iter, Re, time)
+        end
     end
 
     return Re, iter, tol

@@ -1,5 +1,5 @@
 function continuation_arclength(Ψstart, p::CavityParameters, Re_start, ΔRe, steps;
-                                linearstability = false)
+                                linearstability = false, verbose=false)
     @unpack n, scl, Ψ = p
 
     p.Re = Re_start
@@ -25,21 +25,37 @@ function continuation_arclength(Ψstart, p::CavityParameters, Re_start, ΔRe, st
     Re_series[1] = Re_start
     Re_series[2] = Re_start + ΔRe
 
-    if linearstability == true
-        lambdas = Vector{typeof(u1[1:(end - 1)])}(undef, steps)
+    nxc = Int(floor(n / 2) + 1)
+    nyc = Int(floor(n / 2) + 1)
 
-        lambdas[1] = linearstability_lambdas(u1[1:(end - 1)], p)
-        lambdas[2] = linearstability_lambdas(u2[1:(end - 1)], p)
+    if linearstability == true
+        lambdas = Vector{typeof(u1[1:end-1])}(undef, steps)
+
+        lsa_time1 = @elapsed lambdas[1] = linearstability_lambdas(u1[1:end-1], p)
+        lsa_time2 = @elapsed lambdas[2] = linearstability_lambdas(u2[1:end-1], p)
+    end
+
+    if verbose == true
+        if linearstability == true
+            @printf("  %-6s %-6s %-6s %-6s %-6s %-6s %-6s %-6s %-6s\n", "Step", "Re", "Iter.", "Ψc", "Newton", "λ1", "λ2", "λ3", "LSA")
+            @printf("  %-6d %-6.2f %-6.2f %-6.2f %-6.2f %-6.2f %-6.2f %-6.2f %-6.2f\n", 1, Re_series[1], 0, Ψ1[nxc, nyc], 0, lambdas[1][1], lambdas[1][1], lambdas[1][1], lsa_time1)
+            @printf("  %-6d %-6.2f %-6.2f %-6.2f %-6.2f %-6.2f %-6.2f %-6.2f %-6.2f\n", 2, Re_series[2], 0, Ψ2[nxc, nyc], 0, lambdas[2][1], lambdas[2][2], lambdas[2][3], lsa_time2)
+        else
+            @printf("  %-6s %-6s %-6s %-6s %-6s\n", "Step", "Re", "Iter.", "Ψc", "Newton")
+            @printf("  %-6d %-6.2f %-6.2f %-6.2f %-6.2f\n", 1, Re_series[1], 0, Ψ1[nxc, nyc], 0)
+            @printf("  %-6d %-6.2f %-6.2f %-6.2f %-6.2f\n", 2, Re_series[2], 0, Ψ2[nxc, nyc], 0)
+        end
     end
 
     for i in 3:(steps)
-        u, _, _ = newton_continuation(f!, u1, u2, s, p)
+        newton_time = @elapsed u, iter, _ = newton_for_continuation(f!, u1, u2, s, p)
+        u, _, _ = newton_for_continuation(f!, u1, u2, s, p)
 
         u1 = u2
         u2 = u
 
         if linearstability == true
-            lambdas[i] = linearstability_lambdas(u[1:(end - 1)], p)
+            lsa_time = @elapsed lambdas[i] = linearstability_lambdas(u[1:end-1], p)
         end
 
         Re_series[i] = u[end] * p.scl
@@ -47,6 +63,16 @@ function continuation_arclength(Ψstart, p::CavityParameters, Re_start, ΔRe, st
 
         @inbounds @views p.Ψ[3:(n - 1), 3:(n - 1)][:] .= u[1:(end - 1)]
         sol[i] = construct_BC(p)
+
+
+        if verbose == true
+            if linearstability == true
+                @printf("  %-6d %-6.2f %-6.2f %-6.2f %-6.2f %-6.2f %-6.2f %-6.2f %-6.2f\n", i, Re_series[i], iter, Ψ[nxc, nyc], newton_time, lambdas[i][1], lambdas[i][2], lambdas[i][3], lsa_time)
+            else
+                @printf("  %-6d %-6.2f %-6.2f %-6.2f %-6.2f\n", i, Re_series[i], iter, Ψ[nxc, nyc], newton_time)
+            end
+        end
+
     end
 
     if linearstability == true

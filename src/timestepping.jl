@@ -1,4 +1,4 @@
-function timestepping(Ψstart, p::CavityParameters, Δt, nb_timesteps)
+function timestepping(Ψstart, p::CavityParameters, Δt, timesteps; convergence_check=false, verbose=false)
     @unpack n, Ψ, Ψ0 = p
 
     @inbounds Ψ0 .= Ψstart
@@ -6,12 +6,33 @@ function timestepping(Ψstart, p::CavityParameters, Δt, nb_timesteps)
 
     ft!(fu, u, p) = ftime!(fu, u, p, Δt)
 
-    for step in 1:nb_timesteps
-        u0, iter, tol = newton(ft!, u0, p)
+    nc = Int(ceil((n-3)*(n-3)/2)) 
 
-        Ψ[3:(n - 1), 3:(n - 1)] .= reshape(u0, (n - 3, n - 3))
+    if verbose == true
+        @printf("  %-10s %-10s %-10s %-10s\n", "Timestep", "Ψc", "Newton[s]", "Iters.")
+    end
 
-        Ψ0 .= Ψ
+    for timestep in 1:timesteps
+        time = @elapsed u, iter, tol = newton(ft!, u0, p)
+
+        Ψ[3:(n - 1), 3:(n - 1)] .= reshape(u, (n - 3, n - 3))
+
+        if verbose == true
+            @printf("  %-10d %-+10.6f %-10.6f %-10d\n", timestep, u[nc], time, iter)
+        end
+
+        if convergence_check == true
+            if abs(u0[nc] - u[nc]) < 1e-8
+                println(abs(u0[nc] - u[nc]))
+                @printf("  ... center value converged")
+                break
+            end
+        end
+
+        u0 .= u
+
+        # TODO: why error when removing
+        Ψ0 .= Ψ 
     end
 
     construct_BC!(p)
