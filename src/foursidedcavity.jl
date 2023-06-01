@@ -237,6 +237,13 @@ function f!(fu, u, p::CavityStruct)
     return nothing
 end
 
+function f(u, p::CavityStruct)
+    fu = similar(u)
+    f!(fu, u, p)
+
+    return fu
+end
+
 function ftime!(fu, u, p::CavityStruct, Δt)
     @unpack Re, Ψstart, n, D1, D2, D4 = p.params
     @unpack fΨ, Ψ, D2Ψ, ΨD2, D4Ψ, ΨD4, laplΨ, biharmΨ, laplΨ0, nonlinΨ = p.cache
