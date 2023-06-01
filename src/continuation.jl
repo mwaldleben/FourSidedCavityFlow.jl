@@ -1,18 +1,17 @@
-function continuation_arclength(Ψstart, p::CavityParameters, Re_start, ΔRe, steps;
+function continuation_arclength(Ψstart, p::CavityStruct, Re_start, ΔRe, steps;
                                 linearstability = false, verbose=false)
-    @unpack n, scl, Ψ = p
+    @unpack n, scl = p.params
 
-    p.Re = Re_start
-    @inbounds Ψ .= Ψstart
-    @inbounds u0 = reshape(Ψ[3:(n - 1), 3:(n - 1)], (n - 3) * (n - 3))
+    p.params.Re = Re_start
+    @inbounds u0 = reshape(Ψstart[3:(n - 1), 3:(n - 1)], (n - 3) * (n - 3))
     u1, _, _ = newton(f!, u0, p)
     Ψ1 = constructBC(u1, p)
-    u1 = [u1; p.Re / scl]
+    u1 = [u1; p.params.Re / scl]
 
-    p.Re = Re_start + ΔRe
+    p.params.Re = Re_start + ΔRe
     u2, _, _ = newton(f!, u0, p)
     Ψ2 = constructBC(u2, p)
-    u2 = [u2; p.Re / scl]
+    u2 = [u2; p.params.Re / scl]
 
     s = norm(u2 - u1)
 
@@ -58,8 +57,8 @@ function continuation_arclength(Ψstart, p::CavityParameters, Re_start, ΔRe, st
             lsa_time = @elapsed lambdas[i] = linearstability_lambdas(u[1:end-1], p)
         end
 
-        Re_series[i] = u[end] * p.scl
-        p.Re = Re_series[i]
+        Re_series[i] = u[end] * scl
+        p.params.Re = Re_series[i]
 
         sol[i] = constructBC(u[1:(end - 1)], p)
 
@@ -80,8 +79,9 @@ function continuation_arclength(Ψstart, p::CavityParameters, Re_start, ΔRe, st
     return sol, Re_series
 end
 
-function newton_for_continuation(f!::F, x1, x2, s, p; tolmax = 1e-10,
+function newton_for_continuation(f!::F, x1, x2, s, p::CavityStruct; tolmax = 1e-10,
                                  maxiter = 100) where {F}
+    @unpack scl = p.params
     x = copy(x2)
     xi = x[1:(end - 1)]
 
@@ -104,7 +104,7 @@ function newton_for_continuation(f!::F, x1, x2, s, p; tolmax = 1e-10,
     iter = 0
     tol = 1.0
     while tol > tolmax && iter < maxiter
-        p.Re = x[end] * p.scl # unscaled reynolds
+        p.params.Re = x[end] * scl # unscaled reynolds
 
         xi = x[1:(end - 1)]
         fxi = fx[1:(end - 1)]
@@ -119,7 +119,7 @@ function newton_for_continuation(f!::F, x1, x2, s, p; tolmax = 1e-10,
         J2[1:dim, 1:dim] = J
 
         # Calculate change in "Reynolds variable"
-        p.Re = (x[end] + eps) * p.scl # unscaled Reynolds
+        p.params.Re = (x[end] + eps) * scl # unscaled Reynolds
         f!(fxi_Re, xi, p)
         J2[1:dim, dim + 1] = (fxi_Re - fxi) / eps
 

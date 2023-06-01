@@ -2,7 +2,7 @@
     @testset "steadystate" begin
         n = 6
         Re = 100
-        p = CF.setup_params(n, Re)
+        p = CF.setup_struct(n, Re)
 
         Ψ0 = zeros(n + 1, n + 1)
         Ψsteady, iter, tol = CF.steadystate(Ψ0, p)

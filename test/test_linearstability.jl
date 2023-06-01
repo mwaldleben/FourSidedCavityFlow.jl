@@ -3,13 +3,12 @@
         # Test nonlinear operator of generalized eigenvalue problem
         n = 6
         Re = 100
-        p = CF.setup_params(n, Re)
+        p = CF.setup_struct(n, Re)
 
         u = ones((n - 3) * (n - 3))
         fu = similar(u)
 
         Ψ0 = CF.constructBC(u, p)
-        p.Ψ0 .= p.Ψ
 
         Ψ = zeros(n + 1, n + 1)
         Ψ[3, 3] = 1.0
@@ -33,7 +32,7 @@
         # Test creation of matrices A, B for the generalized eigenvalue problem
         n = 6
         Re = 100
-        p = CF.setup_params(n, Re)
+        p = CF.setup_struct(n, Re)
 
         dim = (n - 3) * (n - 3)
         u = ones(dim)
@@ -69,7 +68,7 @@
         # Test creation of matrices A, B for the generalized eigenvalue problem
         n = 6
         Re = 100
-        p = CF.setup_params(n, Re)
+        p = CF.setup_struct(n, Re)
 
         dim = (n - 3) * (n - 3)
         u = ones(dim)
@@ -97,7 +96,7 @@
         n = 8
         dim = (n - 3) * (n - 3)
         Re0 = 66
-        p = CF.setup_params(n, Re0)
+        p = CF.setup_struct(n, Re0)
 
         Ψ0 = zeros(n + 1, n + 1)
         Ψsteady, iter, tol = CF.steadystate(Ψ0, p)

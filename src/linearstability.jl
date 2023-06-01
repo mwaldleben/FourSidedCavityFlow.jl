@@ -1,5 +1,6 @@
-function f_linearstability!(fu, Ψ, Ψ0, p::CavityParameters)
-    @unpack Re, n, D1, D2, D4, fΨ, D2Ψ, ΨD2, D4Ψ, ΨD4, laplΨ, biharmΨ, laplΨ = p
+function f_linearstability!(fu, Ψ, Ψ0, p::CavityStruct)
+    @unpack Re, n, D1, D2, D4 = p.params
+    @unpack fΨ, D2Ψ, ΨD2, D4Ψ, ΨD4, laplΨ, biharmΨ = p.cache
 
     # Ψ0
     D1Ψ0 = similar(Ψ)
@@ -53,8 +54,9 @@ function f_linearstability!(fu, Ψ, Ψ0, p::CavityParameters)
     return nothing
 end
 
-function linearstability_matrices!(A, B, u, p)
-    @unpack Re, n, D2, D2Ψ, ΨD2, laplΨ = p
+function linearstability_matrices!(A, B, u, p::CavityStruct)
+    @unpack Re, n, D2 = p.params
+    @unpack D2Ψ, ΨD2, laplΨ = p.cache
 
     Ψ0 = constructBC(u, p)
 
@@ -79,8 +81,8 @@ function linearstability_matrices!(A, B, u, p)
     return nothing
 end
 
-function linearstability_lambdas!(lambdas_real, u, p)
-    @unpack Re, n = p
+function linearstability_lambdas!(lambdas_real, u, p::CavityStruct)
+    @unpack Re, n = p.params
 
     dim = (n - 3) * (n - 3)
     A = zeros(dim, dim)
@@ -93,7 +95,7 @@ function linearstability_lambdas!(lambdas_real, u, p)
 end
 
 function linearstability_lambdas(u, p)
-    @unpack Re, n = p
+    @unpack Re, n = p.params
 
     dim = (n - 3) * (n - 3)
     A = zeros(dim, dim)
@@ -106,14 +108,14 @@ function linearstability_lambdas(u, p)
     return lambdas_real
 end
 
-function linearstability_lambdamax(Re, u, p)
-    @unpack n, Ψ = p
+function linearstability_lambdamax(Re, u, p::CavityStruct)
+    @unpack n = p.params
 
     dim = (n - 3) * (n - 3)
     A = zeros(dim, dim)
     B = zeros(dim, dim)
 
-    p.Re = Re
+    p.params.Re = Re
     linearstability_matrices!(A, B, u, p)
 
     vals, _ = eigen(A, B) # generalized eigenvalues
@@ -122,8 +124,8 @@ function linearstability_lambdamax(Re, u, p)
     return λmax
 end
 
-function newton1D_for_linearstability(Re0, u0, p; tolmax = 1e-10, maxiter = 20, verbose = false)
-    @unpack n, Ψ, scl = p
+function newton1D_for_linearstability(Re0, u0, p::CavityStruct; tolmax = 1e-10, maxiter = 20, verbose = false)
+    @unpack n, scl = p.params
 
     Re = Re0
     x = Re0 / scl
@@ -140,7 +142,7 @@ function newton1D_for_linearstability(Re0, u0, p; tolmax = 1e-10, maxiter = 20, 
     while tol > tolmax && iter < maxiter
         time = @elapsed begin 
             # Refine solution for new Reynolds number
-            p.Re = Re
+            p.params.Re = Re
             u, _, _ = newton(f!, u, p)
             fx = linearstability_lambdamax(Re, u, p)
 
@@ -149,7 +151,7 @@ function newton1D_for_linearstability(Re0, u0, p; tolmax = 1e-10, maxiter = 20, 
             Re1 = x1 * scl
 
             # Refine solution for step
-            p.Re = Re1
+            p.params.Re = Re1
             u1, _, _ = newton(f!, u, p)
             fx1 = linearstability_lambdamax(Re1, u1, p)
 

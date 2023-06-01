@@ -9,16 +9,16 @@
         @test Minv ≈ Minvref
     end
 
-    @testset "setup_params" begin
+    @testset "setup_struct" begin
         n = 3
         Re = 100
-        p = CF.setup_params(n, Re)
+        p = CF.setup_struct(n, Re)
 
         nodes_ref = [1; 1 / 2; -1 / 2; -1]
         D1_ref = [19/6 -4 4/3 -1/2; 1 -1/3 -1 1/3; -1/3 1 1/3 -1; 1/2 -4/3 4 -19/6]
 
-        @test p.nodes ≈ nodes_ref
-        @test p.D1 ≈ D1_ref
+        @test p.params.nodes ≈ nodes_ref
+        @test p.params.D1 ≈ D1_ref
     end
     @testset "constructBC!" begin
         # Test boundary reconstruction of Ψ when imposing derivatives at boundary
@@ -33,14 +33,14 @@
 
         Re = 100
         n = 8
-        p = CF.setup_params(n, Re)
+        p = CF.setup_struct(n, Re)
 
-        p.bcleft = Ψbcleft(p.nodes)
-        p.bcright = Ψbcright(p.nodes)
-        p.bctop = Ψbctop(p.nodes)
-        p.bcbottom = Ψbcbottom(p.nodes)
+        p.params.bcleft = Ψbcleft(p.params.nodes)
+        p.params.bcright = Ψbcright(p.params.nodes)
+        p.params.bctop = Ψbctop(p.params.nodes)
+        p.params.bcbottom = Ψbcbottom(p.params.nodes)
 
-        Ψexact = [Ψf(x, y) for x in p.nodes, y in p.nodes]
+        Ψexact = [Ψf(x, y) for x in p.params.nodes, y in p.params.nodes]
 
         Ψ1 = zeros(n + 1, n + 1)
         Ψ1[3:(n - 1), 3:(n - 1)] = Ψexact[3:(n - 1), 3:(n - 1)]
@@ -55,7 +55,7 @@
     @testset "construct_homogenousBC!" begin
         n = 6
         Re = 100
-        p = CF.setup_params(n, Re)
+        p = CF.setup_struct(n, Re)
 
         u = ones((n - 3) * (n - 3))
         Ψ = zeros(n + 1, n + 1)
@@ -78,7 +78,7 @@
         # in cavity flow
         n = 6
         Re = 100
-        p = CF.setup_params(n, Re)
+        p = CF.setup_struct(n, Re)
 
         u0 = zeros((n - 3) * (n - 3))
         fu = similar(u0)
@@ -102,10 +102,10 @@
         # in cavity flow
         n = 6
         Re = 100
-        p = CF.setup_params(n, Re)
+        p = CF.setup_struct(n, Re)
 
         u0 = zeros((n - 3) * (n - 3))
-        p.Ψ0 = zeros(n + 1, n + 1)
+        p.params.Ψstart .= zeros(n + 1, n + 1)
         fu = similar(u0)
 
         Δt = 1

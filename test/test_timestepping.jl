@@ -2,7 +2,7 @@
     @testset "timestepping" begin
         n = 6
         Re = 100
-        p = CF.setup_params(n, Re)
+        p = CF.setup_struct(n, Re)
 
         Δt = 1
         timesteps = 200

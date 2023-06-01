@@ -1,5 +1,6 @@
-function timestepping(Ψstart, p::CavityParameters, Δt, timesteps; convergence_check=false, verbose=false)
-    @unpack n, Ψ, Ψ0 = p
+function timestepping(Ψstart, p::CavityStruct, Δt, timesteps; convergence_check=false, verbose=false)
+    @unpack n = p.params
+    @unpack Ψ, Ψ0 = p.cache
 
     @inbounds Ψ0 .= Ψstart
     @inbounds u0 = reshape(Ψstart[3:(n - 1), 3:(n - 1)], (n - 3) * (n - 3))
@@ -40,8 +41,9 @@ function timestepping(Ψstart, p::CavityParameters, Δt, timesteps; convergence_
     return Ψ
 end
 
-function timestepping_save(Ψstart, p::CavityParameters, Δt, steps)
-    @unpack n, Ψ, Ψ0 = p
+function timestepping_save(Ψstart, p::CavityStruct, Δt, steps)
+    @unpack n = p.params
+    @unpack n, Ψ, Ψ0 = p.cache
 
     @inbounds Ψ0 .= Ψstart
     @inbounds u0 = reshape(Ψstart[3:(n - 1), 3:(n - 1)], (n - 3) * (n - 3))

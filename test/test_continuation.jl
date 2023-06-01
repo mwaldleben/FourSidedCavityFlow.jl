@@ -2,7 +2,7 @@
     @testset "continuation_arclength" begin
         n = 6
         Re = 100
-        p = CF.setup_params(n, Re)
+        p = CF.setup_struct(n, Re)
 
         Ψ0 = zeros((n + 1, n + 1))
 
@@ -24,7 +24,7 @@
     @testset "newton_for_continuation" begin
         n = 6
         Re = 100
-        p = CF.setup_params(n, Re)
+        p = CF.setup_struct(n, Re)
 
         # Augmented system
         x1 = ones((n - 3) * (n - 3) + 1)

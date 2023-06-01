@@ -1,8 +1,9 @@
 mutable struct CavityParameters{T <: Real}
-    # Parameters
+    # Parameters which are change
     Re::T
+    Ψstart::Matrix{T}
 
-    # Mesh and boundary paramaters 
+    # Normally fixed parameters 
     n::Int64
     nodes::Vector{T}
     D1::Matrix{T}
@@ -16,24 +17,73 @@ mutable struct CavityParameters{T <: Real}
     m12::T
     m21::T
     m22::T
+    scl::T
+end
 
-    # Cache for calculations
+struct CavityCache{T <: Real}
     h1::Vector{T}
     h2::Vector{T}
     k1::Vector{T}
     k2::Vector{T}
-    scl::T
-    fΨ::Matrix{T}
     Ψ::Matrix{T}
-    Ψ0::Matrix{T}
+    fΨ::Matrix{T}
     D2Ψ::Matrix{T}
     ΨD2::Matrix{T}
     D4Ψ::Matrix{T}
     ΨD4::Matrix{T}
     biharmΨ::Matrix{T}
     laplΨ::Matrix{T}
+    Ψ0::Matrix{T}
     laplΨ0::Matrix{T}
     nonlinΨ::Matrix{T}
+end
+
+struct CavityStruct{T <: Real}
+    params::CavityParameters{T}
+    cache::CavityCache{T}
+end
+
+function setup_struct(n, Re)
+    nodes, D1, D2, D4 = diff_chebyshev(n)
+
+    k0 = 10
+    bcfunc(x) = ((exp(k0 * (x - 1)) - 1) * (exp(-k0 * (x + 1)) - 1))^2
+
+    bcleft = -bcfunc.(nodes)
+    bcright = bcfunc.(nodes)
+    bctop = bcfunc.(nodes)
+    bcbottom = -bcfunc.(nodes)
+    Minv = constructBC_matrix(D1)
+
+    scl = 1e6
+    Ψstart = zeros(n + 1, n + 1)
+
+    params = CavityParameters{Float64}(Re, Ψstart, n, nodes, D1, D2, D4, bcleft, bcright, bctop,
+                                       bcbottom, Minv[1, 1], Minv[1, 2], Minv[2, 1], Minv[2, 2], scl)
+
+    h1 = similar(bctop[3:(n - 1)])
+    h2 = similar(bctop[3:(n - 1)])
+    k1 = similar(bctop[2:n])
+    k2 = similar(bctop[2:n])
+
+    Ψ = zeros(n + 1, n + 1)
+    fΨ = similar(Ψ)
+    D2Ψ = similar(Ψ)
+    ΨD2 = similar(Ψ)
+    D4Ψ = similar(Ψ)
+    ΨD4 = similar(Ψ)
+    laplΨ = similar(Ψ)
+    biharmΨ = similar(Ψ)
+    Ψ0 = zeros(n + 1, n + 1)
+    laplΨ0 = similar(Ψ)
+    nonlinΨ = similar(Ψ)
+
+    cache = CavityCache{Float64}(h1, h2, k1, k2, Ψ, fΨ, D2Ψ, ΨD2, D4Ψ, ΨD4,
+                                 biharmΨ, laplΨ, Ψ0, laplΨ0, nonlinΨ)
+
+    p = CavityStruct{Float64}(params, cache)
+
+    return p
 end
 
 function constructBC_matrix(D)
@@ -42,8 +92,9 @@ function constructBC_matrix(D)
     return inv(M)
 end
 
-function constructBC!(Ψ, p)
-    @unpack n, D1, m11, m12, m21, m22, bcleft, bcright, bctop, bcbottom, h1, h2, k1, k2 = p
+function constructBC!(Ψ, p::CavityStruct)
+    @unpack n, D1, m11, m12, m21, m22, bcleft, bcright, bctop, bcbottom = p.params 
+    @unpack h1, h2, k1, k2 = p.cache
 
     @inbounds @views Ψ1 = Ψ[3:(n - 1), 3:(n - 1)]
     @inbounds @views Ψ2 = Ψ[3:(n - 1), 2:n]'
@@ -67,8 +118,8 @@ function constructBC!(Ψ, p)
     return nothing
 end
 
-function constructBC(u, p)
-    @unpack n = p
+function constructBC(u, p::CavityStruct)
+    @unpack n = p.params
 
     Ψ = zeros(n + 1, n + 1)
     @inbounds @views Ψ[3:(n - 1), 3:(n - 1)][:] .= u
@@ -78,8 +129,9 @@ function constructBC(u, p)
     return Ψ 
 end
 
-function construct_homogenousBC!(Ψ, p)
-    @unpack n, D1, m11, m12, m21, m22, bcleft, bcright, bctop, bcbottom, h1, h2, k1, k2 = p
+function construct_homogenousBC!(Ψ, p::CavityStruct)
+    @unpack n, D1, m11, m12, m21, m22, bcleft, bcright, bctop, bcbottom = p.params 
+    @unpack h1, h2, k1, k2 = p.cache
 
     @inbounds @views Ψ1 = Ψ[3:(n - 1), 3:(n - 1)]
     @inbounds @views Ψ2 = Ψ[3:(n - 1), 2:n]'
@@ -100,8 +152,9 @@ function construct_homogenousBC!(Ψ, p)
     return nothing
 end
 
-function f!(fu, u, p::CavityParameters)
-    @unpack Re, n, D1, D2, D4, fΨ, Ψ, D2Ψ, ΨD2, D4Ψ, ΨD4, laplΨ, biharmΨ = p
+function f!(fu, u, p::CavityStruct)
+    @unpack Re, n, D1, D2, D4 = p.params
+    @unpack fΨ, Ψ, D2Ψ, ΨD2, D4Ψ, ΨD4, laplΨ, biharmΨ = p.cache
 
     @inbounds @views Ψ[3:(n - 1), 3:(n - 1)][:] .= u
     # @inbounds Ψ[3:(n - 1),3:(n - 1)] = reshape(u, n - 3 , n - 3)
@@ -133,8 +186,9 @@ function f!(fu, u, p::CavityParameters)
     return nothing
 end
 
-function ftime!(fu, u, p, Δt)
-    @unpack Re, n, D1, D2, D4, fΨ, Ψ, Ψ0, D2Ψ, ΨD2, D4Ψ, ΨD4, laplΨ, biharmΨ, laplΨ0, nonlinΨ = p
+function ftime!(fu, u, p::CavityStruct, Δt)
+    @unpack Re, n, D1, D2, D4 = p.params
+    @unpack fΨ, Ψ, D2Ψ, ΨD2, D4Ψ, ΨD4, laplΨ, biharmΨ, Ψ0, laplΨ0, nonlinΨ = p.cache
 
     @inbounds @views Ψ[3:(n - 1), 3:(n - 1)][:] .= u
     # @inbounds Ψ[3:(n - 1), 3:(n - 1)] = reshape(u, n - 3, n - 3)
@@ -172,42 +226,4 @@ function ftime!(fu, u, p, Δt)
     # @inbounds fu .= reshape(fΨ[3:(n - 1), 3:(n - 1)], (n - 3) * (n - 3))
 
     return nothing
-end
-
-function setup_params(n, Re)
-    nodes, D1, D2, D4 = diff_chebyshev(n)
-
-    k0 = 10
-    bcfunc(x) = ((exp(k0 * (x - 1)) - 1) * (exp(-k0 * (x + 1)) - 1))^2
-
-    bcleft = -bcfunc.(nodes)
-    bcright = bcfunc.(nodes)
-    bctop = bcfunc.(nodes)
-    bcbottom = -bcfunc.(nodes)
-
-    Minv = constructBC_matrix(D1)
-    h1 = similar(bctop[3:(n - 1)])
-    h2 = similar(bctop[3:(n - 1)])
-    k1 = similar(bctop[2:n])
-    k2 = similar(bctop[2:n])
-    scl = 1e6
-
-    Ψ = zeros(n + 1, n + 1)
-    Ψ0 = zeros(n + 1, n + 1)
-    fΨ = similar(Ψ)
-    laplΨ = similar(Ψ)
-    biharmΨ = similar(Ψ)
-    laplΨ0 = similar(Ψ)
-    nonlinΨ = similar(Ψ)
-    D2Ψ = similar(Ψ)
-    ΨD2 = similar(Ψ)
-    D4Ψ = similar(Ψ)
-    ΨD4 = similar(Ψ)
-
-    p = CavityParameters{Float64}(Re, n, nodes, D1, D2, D4, bcleft, bcright, bctop,
-                                  bcbottom, Minv[1, 1], Minv[1, 2], Minv[2, 1], Minv[2, 2],
-                                  h1, h2, k1, k2, scl, fΨ, Ψ, Ψ0, D2Ψ, ΨD2, D4Ψ, ΨD4,
-                                  biharmΨ, laplΨ, laplΨ0, nonlinΨ)
-
-    return p
 end
