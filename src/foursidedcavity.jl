@@ -36,14 +36,14 @@ mutable struct CavityParameters{T <: Real}
     nonlinΨ::Matrix{T}
 end
 
-function construct_BC_matrix(D)
+function constructBC_matrix(D)
     n = size(D, 1) - 1
     M = [D[1, 2] D[1, n]; D[n + 1, 2] D[n + 1, n]]
     return inv(M)
 end
 
-function construct_BC!(p)
-    @unpack n, Ψ, D1, m11, m12, m21, m22, bcleft, bcright, bctop, bcbottom, h1, h2, k1, k2 = p
+function constructBC!(Ψ, p)
+    @unpack n, D1, m11, m12, m21, m22, bcleft, bcright, bctop, bcbottom, h1, h2, k1, k2 = p
 
     @inbounds @views Ψ1 = Ψ[3:(n - 1), 3:(n - 1)]
     @inbounds @views Ψ2 = Ψ[3:(n - 1), 2:n]'
@@ -67,14 +67,19 @@ function construct_BC!(p)
     return nothing
 end
 
-function construct_BC(p)
-    construct_BC!(p)
+function constructBC(u, p)
+    @unpack n = p
 
-    return copy(p.Ψ)
+    Ψ = zeros(n + 1, n + 1)
+    @inbounds @views Ψ[3:(n - 1), 3:(n - 1)][:] .= u
+
+    constructBC!(Ψ, p)
+
+    return Ψ 
 end
 
-function construct_homogenous_BC!(p)
-    @unpack n, Ψ, D1, m11, m12, m21, m22, bcleft, bcright, bctop, bcbottom, h1, h2, k1, k2 = p
+function construct_homogenousBC!(Ψ, p)
+    @unpack n, D1, m11, m12, m21, m22, bcleft, bcright, bctop, bcbottom, h1, h2, k1, k2 = p
 
     @inbounds @views Ψ1 = Ψ[3:(n - 1), 3:(n - 1)]
     @inbounds @views Ψ2 = Ψ[3:(n - 1), 2:n]'
@@ -101,7 +106,7 @@ function f!(fu, u, p::CavityParameters)
     @inbounds @views Ψ[3:(n - 1), 3:(n - 1)][:] .= u
     # @inbounds Ψ[3:(n - 1),3:(n - 1)] = reshape(u, n - 3 , n - 3)
 
-    construct_BC!(p)
+    constructBC!(Ψ, p)
 
     mul!(D4Ψ, D4, Ψ)
     mul!(ΨD4, Ψ, D4')
@@ -134,7 +139,7 @@ function ftime!(fu, u, p, Δt)
     @inbounds @views Ψ[3:(n - 1), 3:(n - 1)][:] .= u
     # @inbounds Ψ[3:(n - 1), 3:(n - 1)] = reshape(u, n - 3, n - 3)
 
-    construct_BC!(p)
+    constructBC!(Ψ, p)
 
     mul!(D4Ψ, D4, Ψ)
     mul!(ΨD4, Ψ, D4')
@@ -180,7 +185,7 @@ function setup_params(n, Re)
     bctop = bcfunc.(nodes)
     bcbottom = -bcfunc.(nodes)
 
-    Minv = construct_BC_matrix(D1)
+    Minv = constructBC_matrix(D1)
     h1 = similar(bctop[3:(n - 1)])
     h2 = similar(bctop[3:(n - 1)])
     k1 = similar(bctop[2:n])

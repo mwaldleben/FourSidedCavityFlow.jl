@@ -5,7 +5,7 @@
         D = [19/6 -4 4/3 -1/2; 1 -1/3 -1 1/3; -1/3 1 1/3 -1; 1/2 -4/3 4 -19/6]
 
         Minvref = [-9 3; -3 9] / 32
-        Minv = CF.construct_BC_matrix(D)
+        Minv = CF.constructBC_matrix(D)
         @test Minv ≈ Minvref
     end
 
@@ -20,7 +20,7 @@
         @test p.nodes ≈ nodes_ref
         @test p.D1 ≈ D1_ref
     end
-    @testset "construct_BC!" begin
+    @testset "constructBC!" begin
         # Test boundary reconstruction of Ψ when imposing derivatives at boundary
         Ψf(x, y) = @. sin(π * (x - 1) / 2) * sin(π * (y - 1) / 2)
         DΨx(x, y) = @. π / 2 * cos(π * (x - 1) / 2) * sin(π * (y - 1) / 2)
@@ -42,23 +42,26 @@
 
         Ψexact = [Ψf(x, y) for x in p.nodes, y in p.nodes]
 
-        p.Ψ = zeros(n + 1, n + 1)
-        p.Ψ[3:(n - 1), 3:(n - 1)] = Ψexact[3:(n - 1), 3:(n - 1)]
+        Ψ1 = zeros(n + 1, n + 1)
+        Ψ1[3:(n - 1), 3:(n - 1)] = Ψexact[3:(n - 1), 3:(n - 1)]
+        CF.constructBC!(Ψ1, p)
 
-        CF.construct_BC!(p)
+        u2 = Ψexact[3:(n - 1), 3:(n - 1)][:]
+        Ψ2 = CF.constructBC(u2, p)
 
-        @test p.Ψ≈Ψexact atol=1e-6
+        @test Ψ1≈Ψexact atol=1e-6
+        @test Ψ2≈Ψexact atol=1e-6
     end
-    @testset "construct_homogenous_BC!" begin
+    @testset "construct_homogenousBC!" begin
         n = 6
         Re = 100
         p = CF.setup_params(n, Re)
 
         u = ones((n - 3) * (n - 3))
-        p.Ψ .= zeros(n + 1, n + 1)
-        p.Ψ[3:(n - 1), 3:(n - 1)] = reshape(u, (n - 3, n - 3))
+        Ψ = zeros(n + 1, n + 1)
+        Ψ[3:(n - 1), 3:(n - 1)] = reshape(u, (n - 3, n - 3))
 
-        CF.construct_homogenous_BC!(p)
+        CF.construct_homogenousBC!(Ψ, p)
 
         Ψref = [0 0 0 0 0 0 0
                 0 0.043402777777778 0.208333333333333 0.208333333333333 0.208333333333333 0.043402777777778 0
@@ -68,7 +71,7 @@
                 0 0.043402777777778 0.208333333333333 0.208333333333333 0.208333333333333 0.043402777777778 0
                 0 0 0 0 0 0 0]
 
-        @test p.Ψ ≈ Ψref
+        @test Ψ ≈ Ψref
     end
     @testset "f!" begin
         # Test right-hand-side function of equation for streamfunction 

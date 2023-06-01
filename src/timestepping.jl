@@ -35,7 +35,7 @@ function timestepping(Ψstart, p::CavityParameters, Δt, timesteps; convergence_
         Ψ0 .= Ψ 
     end
 
-    construct_BC!(p)
+    constructBC!(Ψ, p)
 
     return Ψ
 end
@@ -59,7 +59,7 @@ function timestepping_save(Ψstart, p::CavityParameters, Δt, steps)
         u0, iter, tol = newton(ft!, u0, p)
 
         Ψ[3:(n - 1), 3:(n - 1)] .= reshape(u0, (n - 3, n - 3))
-        construct_BC!(p)
+        constructBC!(Ψ, p)
 
         sol[i + 1] = Ψ
         time_series[i + 1] = Δt * i

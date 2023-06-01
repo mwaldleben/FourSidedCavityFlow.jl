@@ -7,15 +7,15 @@
 
         u = ones((n - 3) * (n - 3))
         fu = similar(u)
-        @inbounds @views p.Ψ[3:(n - 1), 3:(n - 1)][:] .= u
-        CF.construct_BC!(p)
+
+        Ψ0 = CF.constructBC(u, p)
         p.Ψ0 .= p.Ψ
 
-        p.Ψ = zeros(n + 1, n + 1)
-        p.Ψ[3, 3] = 1.0
-        CF.construct_homogenous_BC!(p)
+        Ψ = zeros(n + 1, n + 1)
+        Ψ[3, 3] = 1.0
+        CF.construct_homogenousBC!(Ψ, p)
 
-        CF.f_linearstability!(fu, p)
+        CF.f_linearstability!(fu, Ψ, Ψ0, p)
 
         fu_ref = [16.579816326404938
                   76.437561827493312

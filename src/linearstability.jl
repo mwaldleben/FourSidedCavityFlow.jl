@@ -1,5 +1,5 @@
-function f_linearstability!(fu, p::CavityParameters)
-    @unpack Re, n, D1, D2, D4, fΨ, Ψ, Ψ0, D2Ψ, ΨD2, D4Ψ, ΨD4, laplΨ, biharmΨ, laplΨ = p
+function f_linearstability!(fu, Ψ, Ψ0, p::CavityParameters)
+    @unpack Re, n, D1, D2, D4, fΨ, D2Ψ, ΨD2, D4Ψ, ΨD4, laplΨ, biharmΨ, laplΨ = p
 
     # Ψ0
     D1Ψ0 = similar(Ψ)
@@ -54,25 +54,23 @@ function f_linearstability!(fu, p::CavityParameters)
 end
 
 function linearstability_matrices!(A, B, u, p)
-    @unpack Re, n, D2, Ψ, Ψ0, D2Ψ, ΨD2, laplΨ = p
+    @unpack Re, n, D2, D2Ψ, ΨD2, laplΨ = p
 
-    @inbounds @views Ψ[3:(n - 1), 3:(n - 1)][:] .= u
-    construct_BC!(p)
-    Ψ0 .= Ψ
+    Ψ0 = constructBC(u, p)
 
     fu = similar(u)
     for i in 1:(n - 3)
         for j in 1:(n - 3)
-            p.Ψ = zeros(n + 1, n + 1)
-            p.Ψ[i + 2, j + 2] = 1.0
+            Ψ = zeros(n + 1, n + 1)
+            Ψ[i + 2, j + 2] = 1.0
 
-            construct_homogenous_BC!(p)
-            f_linearstability!(fu, p)
+            construct_homogenousBC!(Ψ, p)
+            f_linearstability!(fu, Ψ, Ψ0, p)
             k = (j - 1) * (n - 3) + i
             @views A[:, k] .= fu
 
-            mul!(D2Ψ, D2, p.Ψ)
-            mul!(ΨD2, p.Ψ, D2')
+            mul!(D2Ψ, D2, Ψ)
+            mul!(ΨD2, Ψ, D2')
             @inbounds @. laplΨ = D2Ψ + ΨD2
             @views B[:, k] .= laplΨ[3:(n - 1), 3:(n - 1)][:]
         end

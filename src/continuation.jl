@@ -6,13 +6,13 @@ function continuation_arclength(Ψstart, p::CavityParameters, Re_start, ΔRe, st
     @inbounds Ψ .= Ψstart
     @inbounds u0 = reshape(Ψ[3:(n - 1), 3:(n - 1)], (n - 3) * (n - 3))
     u1, _, _ = newton(f!, u0, p)
+    Ψ1 = constructBC(u1, p)
     u1 = [u1; p.Re / scl]
-    Ψ1 = construct_BC(p)
 
     p.Re = Re_start + ΔRe
     u2, _, _ = newton(f!, u0, p)
+    Ψ2 = constructBC(u2, p)
     u2 = [u2; p.Re / scl]
-    Ψ2 = construct_BC(p)
 
     s = norm(u2 - u1)
 
@@ -61,8 +61,7 @@ function continuation_arclength(Ψstart, p::CavityParameters, Re_start, ΔRe, st
         Re_series[i] = u[end] * p.scl
         p.Re = Re_series[i]
 
-        @inbounds @views p.Ψ[3:(n - 1), 3:(n - 1)][:] .= u[1:(end - 1)]
-        sol[i] = construct_BC(p)
+        sol[i] = constructBC(u[1:(end - 1)], p)
 
 
         if verbose == true
