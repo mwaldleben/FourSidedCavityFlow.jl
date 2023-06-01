@@ -2,6 +2,7 @@ module FourSidedCavityFlow
 
 using LinearAlgebra
 using FiniteDiff
+using PreallocationTools
 using UnPack
 using Printf
 

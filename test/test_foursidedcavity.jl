@@ -41,7 +41,7 @@
         p.params.bcbottom = Ψbcbottom(p.params.nodes)
 
         Ψexact = [Ψf(x, y) for x in p.params.nodes, y in p.params.nodes]
-
+        
         Ψ1 = zeros(n + 1, n + 1)
         Ψ1[3:(n - 1), 3:(n - 1)] = Ψexact[3:(n - 1), 3:(n - 1)]
         CF.constructBC!(Ψ1, p)

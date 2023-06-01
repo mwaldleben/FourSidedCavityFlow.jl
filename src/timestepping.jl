@@ -1,8 +1,10 @@
 function timestepping(Ψstart, p::CavityStruct, Δt, timesteps; convergence_check=false, verbose=false)
     @unpack n = p.params
-    @unpack Ψ, Ψ0 = p.cache
+    @unpack Ψ = p.cache
 
-    @inbounds Ψ0 .= Ψstart
+    Ψ = get_tmp(Ψ, Ψstart)
+
+    @inbounds p.params.Ψstart .= Ψstart
     @inbounds u0 = reshape(Ψstart[3:(n - 1), 3:(n - 1)], (n - 3) * (n - 3))
 
     ft!(fu, u, p) = ftime!(fu, u, p, Δt)
@@ -32,8 +34,9 @@ function timestepping(Ψstart, p::CavityStruct, Δt, timesteps; convergence_chec
 
         u0 .= u
 
-        # TODO: why error when removing
-        Ψ0 .= Ψ 
+        # TODO: why error when removing, 
+        # because this is past to ftime!
+        p.params.Ψstart .= Ψ 
     end
 
     constructBC!(Ψ, p)

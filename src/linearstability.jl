@@ -2,6 +2,14 @@ function f_linearstability!(fu, Ψ, Ψ0, p::CavityStruct)
     @unpack Re, n, D1, D2, D4 = p.params
     @unpack fΨ, D2Ψ, ΨD2, D4Ψ, ΨD4, laplΨ, biharmΨ = p.cache
 
+    fΨ = get_tmp(fΨ, Ψ)
+    D2Ψ = get_tmp(D2Ψ, Ψ)
+    ΨD2 = get_tmp(ΨD2, Ψ)
+    D4Ψ = get_tmp(D4Ψ, Ψ)
+    ΨD4 = get_tmp(ΨD4, Ψ)
+    laplΨ = get_tmp(laplΨ, Ψ)
+    biharmΨ = get_tmp(biharmΨ, Ψ)
+
     # Ψ0
     D1Ψ0 = similar(Ψ)
     Ψ0D1 = similar(Ψ)
@@ -57,6 +65,10 @@ end
 function linearstability_matrices!(A, B, u, p::CavityStruct)
     @unpack Re, n, D2 = p.params
     @unpack D2Ψ, ΨD2, laplΨ = p.cache
+
+    D2Ψ = get_tmp(D2Ψ, u)
+    ΨD2 = get_tmp(ΨD2, u)
+    laplΨ = get_tmp(laplΨ, u)
 
     Ψ0 = constructBC(u, p)
 
