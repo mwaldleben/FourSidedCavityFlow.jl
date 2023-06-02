@@ -6,10 +6,8 @@ mutable struct CavityParameters{T <: Real}
     # Fixed parameters 
     n::Int64  # dimension: n+1 
     ic::Int64 # index center value
-    iul::Int64 # index upper left
-    iur::Int64 # index upper right
-    ill::Int64 # index lower left
-    ilr::Int64 # index lower right
+    i1::Int64 # index quarter 
+    i2::Int64 # index three quarters
     nodes::Vector{T}
     D1::Matrix{T}
     D2::Matrix{T}
@@ -52,10 +50,8 @@ function setup_struct(n, Re)
     nodes, D1, D2, D4 = diff_chebyshev(n)
 
     ic = floor(n / 2) + 1
-    iul = floor(n / 4) + 1
-    iur = floor(n / 4) + 1
-    ilr = floor(n / 4) + 1
-    ill = floor(n / 4) + 1
+    i1 = floor(n / 4) + 1
+    i2 = 3*floor(n / 4) + 1
 
     k0 = 10
     bcfunc(x) = ((exp(k0 * (x - 1)) - 1) * (exp(-k0 * (x + 1)) - 1))^2
@@ -69,7 +65,7 @@ function setup_struct(n, Re)
     scl = 1e6
     Ψstart = zeros(n + 1, n + 1)
 
-    params = CavityParameters{Float64}(Re, Ψstart, n, ic, iul, iur, ilr, ill, nodes, D1, D2, D4, bcleft, bcright, bctop,
+    params = CavityParameters{Float64}(Re, Ψstart, n, ic, i1, i2, nodes, D1, D2, D4, bcleft, bcright, bctop,
                                        bcbottom, Minv[1, 1], Minv[1, 2], Minv[2, 1], Minv[2, 2], scl)
 
     h1 = similar(bctop[3:(n - 1)])

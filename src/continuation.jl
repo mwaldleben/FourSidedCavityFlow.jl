@@ -54,8 +54,10 @@ function saveΨ(foldername, Ψ, step, Re)
 end
 
 function save_result(io, Ψ, step, iter, time, p)
-    @unpack Re, ic, iul, iur, ill, ilr = p.params 
-    result = "$step,$Re,$(Ψ[ic,ic]),$(Ψ[iul,iul]),$(Ψ[iur,iur]),$(Ψ[ill,ill]),$(Ψ[ilr,ilr]),$iter,$(time)\n"
+    @unpack Re, ic, i1, i2 = p.params 
+
+    # Important: indices are transposed, mapping to physical space
+    result = "$step,$Re,$(Ψ[ic,ic]),$(Ψ[i2,i2]),$(Ψ[i2,i1]),$(Ψ[i1,i2]),$iter,$(time)\n"
     write(io, result)
     flush(io)
 end
