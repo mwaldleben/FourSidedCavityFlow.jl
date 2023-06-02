@@ -3,7 +3,7 @@ using BifurcationKit, DelimitedFiles, Plots
 const CF = FourSidedCavityFlow
 const BK = BifurcationKit
 
-N = 64
+N = 32
 Re = 100
 p = CF.setup_struct(N, Re)
 
