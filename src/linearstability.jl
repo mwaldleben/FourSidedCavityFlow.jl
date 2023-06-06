@@ -165,10 +165,13 @@ function newton1D_for_linearstability(Re0, u0, p::CavityStruct; tolmax = 1e-10, 
             iter += 1
         end
 
+        p.params.Re = Re
+        u, _, _ = newton(f!, u, p)
+
         if verbose == true
             @printf("  %-10d %-10.6f %-10.6f\n", iter, Re, time)
         end
     end
 
-    return Re, iter, tol
+    return Re, u, iter, tol
 end

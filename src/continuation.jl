@@ -57,9 +57,81 @@ function save_result(io, Ψ, step, iter, time, p)
     @unpack Re, ic, i1, i2 = p.params 
 
     # Important: indices are transposed, mapping to physical space
-    result = "$step,$Re,$(Ψ[ic,ic]),$(Ψ[i2,i2]),$(Ψ[i2,i1]),$(Ψ[i1,i2]),$iter,$(time)\n"
+    result = "$step,$Re,$(Ψ[ic,ic]),$(Ψ[i2,i2]),$(Ψ[i2,i1]),$(Ψ[i1,i2]),$(Ψ[i1,i1]),$iter,$(time)\n"
     write(io, result)
     flush(io)
+end
+
+function continuation_arclength_lsa(Ψi, p::CavityParameters, Re_start, Re_stop, ΔRe;
+                                    verbose=false)
+    @unpack n, scl, Ψ = p
+
+    p.params.Re = Re_start
+    @inbounds u0 = reshape(Ψi[3:(n - 1), 3:(n - 1)], (n - 3) * (n - 3))
+    u1, _, _ = newton(f!, u0, p)
+    Ψ1 = constructBC(u1, p)
+    save_result(io, Ψ1, 0, 0, 0.0, p)
+    u1 = [u1; p.params.Re / scl]
+
+    p.params.Re = Re_start + ΔRe
+    u2, _, _ = newton(f!, u0, p)
+    Ψ2 = constructBC(u2, p)
+    u2 = [u2; p.params.Re / scl]
+
+    # Step size norm
+    s = norm(u2 - u1)
+
+
+    if linearstability == true
+        lambdas = Vector{typeof(u1[1:end-1])}(undef, steps)
+
+    lsa_time1 = @elapsed lambdas[1] = linearstability_lambdas(u1[1:end-1], p)
+    lsa_time2 = @elapsed lambdas[2] = linearstability_lambdas(u2[1:end-1], p)
+    end
+
+    if verbose == true
+        if linearstability == true
+            @printf("  %-6s %-6s %-6s %-6s %-6s %-6s %-6s %-6s %-6s\n", "Step", "Re", "Iter.", "Ψc", "Newton", "λ1", "λ2", "λ3", "LSA")
+            @printf("  %-6d %-6.2f %-6.2f %-6.2f %-6.2f %-6.2f %-6.2f %-6.2f %-6.2f\n", 1, Re_series[1], 0, Ψ1[nxc, nyc], 0, lambdas[1][1], lambdas[1][1], lambdas[1][1], lsa_time1)
+            @printf("  %-6d %-6.2f %-6.2f %-6.2f %-6.2f %-6.2f %-6.2f %-6.2f %-6.2f\n", 2, Re_series[2], 0, Ψ2[nxc, nyc], 0, lambdas[2][1], lambdas[2][2], lambdas[2][3], lsa_time2)
+        else
+            @printf("  %-6s %-6s %-6s %-6s %-6s\n", "Step", "Re", "Iter.", "Ψc", "Newton")
+            @printf("  %-6d %-6.2f %-6.2f %-6.2f %-6.2f\n", 1, Re_series[1], 0, Ψ1[nxc, nyc], 0)
+            @printf("  %-6d %-6.2f %-6.2f %-6.2f %-6.2f\n", 2, Re_series[2], 0, Ψ2[nxc, nyc], 0)
+        end
+    end
+
+    for i in 3:(steps)
+        newton_time = @elapsed u, iter, _ = newton_for_continuation(f!, u1, u2, s, p)
+        u, _, _ = newton_for_continuation(f!, u1, u2, s, p)
+
+        u1 = u2
+        u2 = u
+
+        if linearstability == true
+            lsa_time = @elapsed lambdas[i] = linearstability_lambdas(u[1:end-1], p)
+        end
+
+        Re_series[i] = u[end] * p.scl
+        p.Re = Re_series[i]
+
+        sol[i] = constructBC(u[1:(end - 1)], p)
+
+
+        if verbose == true
+            if linearstability == true
+                @printf("  %-6d %-6.2f %-6.2f %-6.2f %-6.2f %-6.2f %-6.2f %-6.2f %-6.2f\n", i, Re_series[i], iter, Ψ[nxc, nyc], newton_time, lambdas[i][1], lambdas[i][2], lambdas[i][3], lsa_time)
+            else
+                @printf("  %-6d %-6.2f %-6.2f %-6.2f %-6.2f\n", i, Re_series[i], iter, Ψ[nxc, nyc], newton_time)
+            end
+        end
+
+    end
+
+    if linearstability == true
+        return sol, lambdas, Re_series
+    end
+    return sol, Re_series
 end
 
 function newton_for_continuation(f!::F, x1, x2, s, p::CavityStruct; tolmax = 1e-10,
