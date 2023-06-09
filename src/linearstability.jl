@@ -81,19 +81,6 @@ function linearstability_matrices!(A, B, u, p::CavityStruct)
     return nothing
 end
 
-function linearstability_lambdas!(lambdas_real, u, p::CavityStruct)
-    @unpack Re, n = p.params
-
-    dim = (n - 3) * (n - 3)
-    A = zeros(dim, dim)
-    B = zeros(dim, dim)
-
-    linearstability_matrices!(A, B, u, p)
-
-    vals, vecs = eigen(A, B) # generalized eigenvalues
-    lambdas_real .= sort(real(vals), rev = true)
-end
-
 function linearstability_lambdas(u, p)
     @unpack Re, n = p.params
 
@@ -103,9 +90,11 @@ function linearstability_lambdas(u, p)
 
     linearstability_matrices!(A, B, u, p)
 
-    vals, vecs = eigen(A, B) # generalized eigenvalues
-    lambdas_real = sort(real(vals), rev = true)
-    return lambdas_real
+    vals, _ = eigen(A, B) # generalized eigenvalues
+
+    # Sorting complex lambdas lexicographically
+    lambdas = sort(vals, by = λ -> (floor(real(λ), digits = 5), imag(λ)), rev=true)
+    return lambdas
 end
 
 function linearstability_lambdamax(Re, u, p::CavityStruct)

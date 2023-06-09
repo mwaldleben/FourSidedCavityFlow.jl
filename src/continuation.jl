@@ -72,7 +72,8 @@ function continuation_arclength_lsa(folderlsa, name, Ψi1, Ψi2, p::CavityStruct
 
     # Write header and open results file
     filelsa = "$folderlsa/results_$(name).csv"
-    header = ["step", "Re", "lambda1", "lambda2", "lambda3", "lambda4", "lambda5", "lambda6", "lambda7", "lambda8",
+    header = ["step", "Re", "lambda1re", "lambda2re", "lambda3re", "lambda4re", "lambda5re", "lambda6re", "lambda7re", "lambda8re",
+              "lambda1im", "lambda2im", "lambda3im", "lambda4im", "lambda5im", "lambda6im", "lambda7im", "lambda8im",
               "psi_c", "psi_t", "psi_b", "psi_l",
               "u_t", "v_t", "u_b", "v_b", "u_l", "v_l",
               "lsa_time", "newton_iters", "newton_time"]
@@ -100,16 +101,16 @@ function continuation_arclength_lsa(folderlsa, name, Ψi1, Ψi2, p::CavityStruct
         u1 = u2
         u2 = u
 
-        # Break after decreasing Reynoldsnumber (=1)
-        # or increasing (=2)
+        # Break after reaching again same Reynolds number
+        # decreasing Re (=1) or increasing (=2)
         if Re_stop_mode == 1
-            if u2[end] < u1[end] 
-                @warn("LSA stopped after $i of $steps steps: Reynolds number is decreasing")
+            if u[end]*scl < Re1
+                @warn("LSA stopped after $i of $steps steps: Reynolds number reached same value again")
                 break
             end
         elseif Re_stop_mode == 2
-            if u2[end] > u1[end] 
-                @warn("LSA stopped after $i of $steps steps: Reynolds number is increasing")
+            if u[end]*scl > Re1
+                @warn("LSA stopped after $i of $steps steps: Reynolds number reached same value again")
                 break
             end
         end
@@ -147,8 +148,10 @@ function save_result_lsa(io, Ψ, step, lambdas, lsa_time, iter, newton_time, p)
     V = Ψ*D1' 
 
     # Important: indices are transposed, mapping to physical space
-    result = "$step,$Re,$(lambdas[1]),$(lambdas[2]),$(lambdas[3]),$(lambdas[4])," *
-             "$(lambdas[5]),$(lambdas[6]),$(lambdas[8]),$(lambdas[9])," *
+    result = "$step,$Re,$(real(lambdas[1])),$(real(lambdas[2])),$(real(lambdas[3])),$(real(lambdas[4]))," *
+    "$(real(lambdas[5])),$(real(lambdas[6])),$(real(lambdas[8])),$(real(lambdas[9]))," *
+    "$(imag(lambdas[1])),$(imag(lambdas[2])),$(imag(lambdas[3])),$(imag(lambdas[4]))," *
+    "$(imag(lambdas[5])),$(imag(lambdas[6])),$(imag(lambdas[8])),$(imag(lambdas[9]))," *
              "$(Ψ[ic,ic]),$(Ψ[ic,i2]),$(Ψ[ic,i1]),$(Ψ[i2,ic])," *
              "$(U[ic,i2]),$(V[ic,i2]),$(U[ic,i1]),$(V[ic,i1]),$(U[i2,ic]),$(V[i2,ic])," *
              "$lsa_time,$iter,$(newton_time)\n"

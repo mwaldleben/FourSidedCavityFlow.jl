@@ -9,7 +9,10 @@
         Re_start = Re
         ΔRe = -1
         steps = 6
-        CF.continuation_arclength(Ψ0, p, Re_start, ΔRe, steps; save_steps = 6)
+        
+        foldercont = "test_continuation"
+        mkdir(foldercont)
+        CF.continuation_arclength(foldercont, Ψ0, p, Re_start, ΔRe, steps; save_steps = 6)
     
         Ψ_ref = [0 0 0 0 0 0 0
               0 0.022395922147029 0.066044664922850 0.059511890031364 0.055490465905256 0.020364765599066 0
@@ -19,10 +22,10 @@
               0 0.020364765599066 0.055490465905256 0.059511890031363 0.066044664922850 0.022395922147029 0
               0 0 0 0 0 0 0]
 
-        Ψ = readdlm("continuation$(n)x$(n)/psis/psi_step006_Re094.373.txt")
+        Ψ = readdlm("$foldercont/psis/psi_step006_Re094.373.txt")
         @test Ψ ≈ Ψ_ref
     
-        rm("continuation$(n)x$(n)", recursive=true)
+        rm(foldercont, recursive=true)
     end
     @testset "newton_for_continuation" begin
      n = 6

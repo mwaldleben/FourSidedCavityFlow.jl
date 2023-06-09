@@ -76,7 +76,7 @@
         A = zeros(dim, dim)
         B = zeros(dim, dim)
 
-        CF.linearstability_lambdas!(λ, u, p)
+        λ = real.(CF.linearstability_lambdas(u, p))
         λmax = CF.linearstability_lambdamax(Re, u, p)
 
         λref = [-0.135715953331695

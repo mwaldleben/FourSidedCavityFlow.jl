@@ -35,7 +35,6 @@ plt = plot(xlim = (0, 400),
            margin = 12Plots.mm,
            legend = false,
            grid = false,
-           color = :black,
            dpi = 800)
 
 # Plot unstable asymmetric solutions
