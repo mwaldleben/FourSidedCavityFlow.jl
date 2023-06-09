@@ -1,38 +1,26 @@
-using FourSidedCavityFlow
-using Plots
-using CSV
-using DataFrames
-using Random
-using LaTeXStrings
-using UnPack
-using Printf
-using DelimitedFiles
-const CF = FourSidedCavityFlow
-gr()
+println("--- Generate bifurcation diagram: ---")
 
 # Read results file of continuation as a DataFrame
-foldername = "continuation$(n)x$(n)"
+df = CSV.read("$foldercont/results.csv", DataFrame)
 
-df = CSV.read("$foldername/results.csv", DataFrame)
-
-# The DataFrame has to be filtered to create
-# the bifurcation diagram
+# The DataFrame has to be filtered to distinguish
+# between stable and unstable solutions
 df_pos = filter(row -> row.psi_c > 0, df)
 df_neg = filter(row -> row.psi_c < 0, df)
 
-# The saddle node bifurcations have maximum Re values
+# The approximated saddle node bifurcations have maximum Re values
 sn1 = df_pos[argmax(df_pos.Re), :]
 sn2 = df_neg[argmax(df_neg.Re), :]
 
-# Pitchfork 1
-df_1 = filter(row -> row.Re < 100, df)
-row_pf1 = argmin(abs.(df_1[!, "psi_c"]))
-pf1 = df_1[row_pf1, :]
+# Approximated pitchfork 1
+df1 = filter(row -> row.Re < 100, df)
+i_pf1 = argmin(abs.(df1.psi_c))
+pf1 = df1[i_pf1, :]
 
-# Pitchfork 2
-df_2 = filter(row -> row.Re > 100, df)
-row_pf2 = argmin(abs.(df_2[!, "psi_c"]))
-pf2 = df_2[row_pf2, :]
+# Approximated pitchfork 2
+df2 = filter(row -> row.Re > 100, df)
+i_pf2 = argmin(abs.(df2.psi_c))
+pf2 = df2[i_pf2, :]
 
 # Create bifurcation curve
 plt = plot(xlim = (0, 400),
@@ -46,54 +34,67 @@ plt = plot(xlim = (0, 400),
            thickness_scaling = 0.6,
            margin = 12Plots.mm,
            legend = false,
-           grid=false,
-           palette = :davos,
-           dpi = 600)
+           grid = false,
+           color = :black,
+           dpi = 800)
 
-# Plot stable assymetric solutions
-df_stab1 = filter(!(row -> row.Re > 150 && pf2.psi_c <= row.psi_c <= sn1.psi_c), df_pos)
-sort!(df_stab1, ["Re"])
-plot!(df_stab1[!, "Re"], df_stab1[!, "psi_c"])
-
-df_stab2 = filter(!(row -> row.Re > 150 && sn2.psi_c <= row.psi_c <= pf2.psi_c), df_neg)
-sort!(df_stab2, ["Re"])
-plot!(df_stab2[!, "Re"], df_stab2[!, "psi_c"])
-
-# Plot unstable assymetric solutions
+# Plot unstable asymmetric solutions
+Re_hopf = 348 # TODO: has to be calculated
+psi_c_hopf = 0.1690
 df_unstab1 = filter(row -> row.Re > 150 && pf2.psi_c <= row.psi_c <= sn1.psi_c, df)
-sort!(df_unstab1, ["Re"])
-plot!(df_unstab1[!, "Re"], df_unstab1[!, "psi_c"], linestyle = :dot)
+plot!(df_unstab1.Re, df_unstab1.psi_c, linestyle = :dot, linecolor = :black)
 
 df_unstab2 = filter(row -> row.Re > 150 && sn2.psi_c <= row.psi_c <= pf2.psi_c, df)
-sort!(df_unstab2, ["Re"])
-plot!(df_unstab2[!, "Re"], df_unstab2[!, "psi_c"], linestyle = :dot)
+plot!(df_unstab2.Re, df_unstab2.psi_c, linestyle = :dot, linecolor = :black)
+
+df_unstab_hopf1 = filter(row -> row.Re >= Re_hopf && row.psi_c > sn1.psi_c, df)
+plot!(df_unstab_hopf1.Re, df_unstab_hopf1.psi_c, linestyle = :dot, linecolor = :black)
+
+df_unstab_hopf2 = filter(row -> row.Re >= Re_hopf && row.psi_c < sn2.psi_c, df)
+plot!(df_unstab_hopf2.Re, df_unstab_hopf2.psi_c, linestyle = :dot, linecolor = :black)
+
+df_unstab_hopf2 = filter(row -> row.Re > 150 && sn2.psi_c <= row.psi_c <= pf2.psi_c, df)
+plot!(df_unstab2.Re, df_unstab2.psi_c, linestyle = :dot, linecolor = :black)
+
+# Plot stable asymmetric solutions
+# sort!(df_stab1, "Re")
+df_stab1a = filter(row -> 150 <= row.Re <= Re_hopf && row.psi_c > sn1.psi_c, df_pos)
+df_stab1b = filter(row -> row.Re <= 160, df_pos)
+sort!(df_stab1a, "Re")
+sort!(df_stab1b, "Re")
+plot!(df_stab1a.Re, df_stab1a.psi_c, linecolor = :black)
+plot!(df_stab1b.Re, df_stab1b.psi_c, linecolor = :black)
+
+df_stab2a = filter(row -> 150 <= row.Re <= Re_hopf && row.psi_c < sn2.psi_c, df_neg)
+df_stab2b = filter(row -> row.Re <= 160, df_neg)
+sort!(df_stab2a, "Re")
+sort!(df_stab2b, "Re")
+plot!(df_stab2a.Re, df_stab2a.psi_c, linecolor = :black)
+plot!(df_stab2b.Re, df_stab2b.psi_c, linecolor = :black)
 
 # Plot stable symmetric solutions
 Re_stab1 = range(0, pf1.Re, length = 100)
 ψstab1 = zeros(size(Re_stab1))
-plot!(Re_stab1, ψstab1, linewidth = 1, palette = :davos)
+plot!(Re_stab1, ψstab1, linecolor = :black)
 
 Re_stab2 = range(pf2.Re, 400, length = 100)
 ψstab2 = zeros(size(Re_stab2))
-plot!(Re_stab2, ψstab2, palette = :davos)
+plot!(Re_stab2, ψstab2, linecolor = :black)
 
 # Plot unstable symmetric solution
 Re_unstab = range(pf1.Re, pf2.Re, length = 100)
 ψunstab = zeros(size(Re_unstab))
-plot!(Re_unstab, ψunstab, linestyle = :dot, palette = :davos)
+plot!(Re_unstab, ψunstab, linestyle = :dot, linecolor = :black)
 
-
-# Add solutions as inset plots (optional)
-function inset_plot(foldername, name, Re, p, pos_relx, pos_rely, subplot_nb)
+# Helper function to plot solutions as small inset frames (optional)
+function inset_plot(folder, name, Re, p, pos_relx, pos_rely, subplot_nb)
     @unpack nodes, ic = p.params
 
-    Ψ = readdlm("$(foldername)/converged_psis/psi_Re$(@sprintf("%07.3f", Re))_$(name).txt")
+    Ψ = readdlm("$folder/psi_Re$(@sprintf("%07.3f", Re))_$(name).txt")
 
     contour!(reverse(nodes),
              reverse(nodes),
              Ψ',
-             # color=[:black, :black],
-             color=:davos,
              title = L"\mathrm{Re} \; %$(Re)",
              titlefontsize = 9,
              inset = (1, bbox(pos_relx, pos_rely, 0.13, 0.13, :bottom, :left)),
@@ -103,31 +104,26 @@ function inset_plot(foldername, name, Re, p, pos_relx, pos_rely, subplot_nb)
              axis = ([], false),
              legend = false,
              subplot = subplot_nb,
+             color = :davos,
              bg_inside = "#f2f2f2",
-            )
-    scatter!([Re], [Ψ[ic, ic]], marker = :circle, markersize = 2, palette = :davos)
+             dpi = 800)
+    scatter!([Re], [Ψ[ic, ic]], marker = :circle, markersize = 2, color = :black)
 end
 
-n = 32
-p = CF.setup_struct(n, 0)
-
-
 Re = 50
-inset_plot(foldername, "sym", Re, p, 0.05, 0.52, 2)
+inset_plot(folderconv_psis, "sym", Re, p, 0.05, 0.52, 2)
 
 Re = 125
-inset_plot(foldername, "sym", Re, p, 0.255, 0.52, 3)
-inset_plot(foldername, "asym1_stab", Re, p, 0.255, 0.83, 4)
-inset_plot(foldername, "asym2_stab", Re, p, 0.255, 0.025, 5)
+inset_plot(folderconv_psis, "sym", Re, p, 0.255, 0.52, 3)
+inset_plot(folderconv_psis, "asym1_stab", Re, p, 0.255, 0.83, 4)
+inset_plot(folderconv_psis, "asym2_stab", Re, p, 0.255, 0.025, 5)
 
 Re = 300
-inset_plot(foldername, "asym1_stab", Re, p, 0.685, 0.8, 6)
-inset_plot(foldername, "asym2_stab", Re, p, 0.685, 0.035, 7)
-inset_plot(foldername, "asym1_unstab", Re, p, 0.685, 0.533, 8)
-inset_plot(foldername, "asym2_unstab", Re, p, 0.685, 0.335, 9)
+inset_plot(folderconv_psis, "asym1_stab", Re, p, 0.685, 0.8, 6)
+inset_plot(folderconv_psis, "asym2_stab", Re, p, 0.685, 0.035, 7)
+inset_plot(folderconv_psis, "asym1_unstab", Re, p, 0.685, 0.533, 8)
+inset_plot(folderconv_psis, "asym2_unstab", Re, p, 0.685, 0.335, 9)
 
 # Save plot
-fileplt = "$foldername/bifurcation_diag$(n)x$(n).png"
+fileplt = "$foldercont/bifurcation_diag$(n)x$(n).png"
 savefig(plt, fileplt)
-println("Saved plot to $(fileplt)")
-gui()

@@ -136,7 +136,7 @@ function newton1D_for_linearstability(Re0, u0, p::CavityStruct; tolmax = 1e-10, 
     tol = 1.0
 
     if verbose == true
-        @printf("  %-10s %-10s %-10s\n", "Newtonstep", "Re", "Time[s]")
+        @printf("  %-10s %-10s %-10s %-10s\n", "Newtonstep", "Re", "lambda_max", "Time[s]")
     end
 
     while tol > tolmax && iter < maxiter
@@ -169,7 +169,7 @@ function newton1D_for_linearstability(Re0, u0, p::CavityStruct; tolmax = 1e-10, 
         u, _, _ = newton(f!, u, p)
 
         if verbose == true
-            @printf("  %-10d %-10.6f %-10.6f\n", iter, Re, time)
+            @printf("  %-10d %-10.6f %-10.6f %-10.6f\n", iter, Re, fx1, time)
         end
     end
 
