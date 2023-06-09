@@ -81,19 +81,6 @@ function linearstability_matrices!(A, B, u, p::CavityStruct)
     return nothing
 end
 
-function linearstability_lambdas!(lambdas_real, u, p::CavityStruct)
-    @unpack Re, n = p.params
-
-    dim = (n - 3) * (n - 3)
-    A = zeros(dim, dim)
-    B = zeros(dim, dim)
-
-    linearstability_matrices!(A, B, u, p)
-
-    vals, vecs = eigen(A, B) # generalized eigenvalues
-    lambdas_real .= sort(real(vals), rev = true)
-end
-
 function linearstability_lambdas(u, p)
     @unpack Re, n = p.params
 
@@ -103,9 +90,11 @@ function linearstability_lambdas(u, p)
 
     linearstability_matrices!(A, B, u, p)
 
-    vals, vecs = eigen(A, B) # generalized eigenvalues
-    lambdas_real = sort(real(vals), rev = true)
-    return lambdas_real
+    vals, _ = eigen(A, B) # generalized eigenvalues
+
+    # Sorting complex lambdas lexicographically
+    lambdas = sort(vals, by = λ -> (floor(real(λ), digits = 5), imag(λ)), rev=true)
+    return lambdas
 end
 
 function linearstability_lambdamax(Re, u, p::CavityStruct)
@@ -136,7 +125,7 @@ function newton1D_for_linearstability(Re0, u0, p::CavityStruct; tolmax = 1e-10, 
     tol = 1.0
 
     if verbose == true
-        @printf("  %-10s %-10s %-10s\n", "Newtonstep", "Re", "Time[s]")
+        @printf("  %-10s %-10s %-10s %-10s\n", "Newtonstep", "Re", "lambda_max", "Time[s]")
     end
 
     while tol > tolmax && iter < maxiter
@@ -165,10 +154,13 @@ function newton1D_for_linearstability(Re0, u0, p::CavityStruct; tolmax = 1e-10, 
             iter += 1
         end
 
+        p.params.Re = Re
+        u, _, _ = newton(f!, u, p)
+
         if verbose == true
-            @printf("  %-10d %-10.6f %-10.6f\n", iter, Re, time)
+            @printf("  %-10d %-10.6f %-10.6f %-10.6f\n", iter, Re, fx1, time)
         end
     end
 
-    return Re, iter, tol
+    return Re, u, iter, tol
 end
