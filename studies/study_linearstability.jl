@@ -2,7 +2,7 @@ println("--- Linear stability analysis: ---")
 
 foldercont_branch2 = "$foldercont/branch2/continuation"
 folderlsa = "$(foldercont)/lsa"
-# mkdir(folderlsa)
+mkdir(folderlsa)
 
 # Read results file of continuation as a DataFrame
 df = CSV.read("$foldercont/results.csv", DataFrame)
@@ -108,9 +108,9 @@ max_steps = 50
 
 ### Saddle node ###
 name = "sn"
-# Re_start = 346 
-# start1, start2 = get_Re_start(df, Re_start)
-# lsa_around_bif_point(foldercont, folderlsa, name, start1, start2, max_steps, 1, p)
+Re_start = 346 
+start1, start2 = get_Re_start(df, Re_start)
+lsa_around_bif_point(foldercont, folderlsa, name, start1, start2, max_steps, 1, p)
 
 # Plot approaching from above and below
 df_lsa = CSV.read("$folderlsa/results_$(name).csv", DataFrame)
@@ -121,10 +121,10 @@ gif_lambdas(folderlsa, name)
 
 ### Pitchfork 1 ###
 name = "pf1"
-# df_1 = filter(row -> row.Re < 100, df)
-# Re_start = 67
-# start1, start2 = get_Re_start(df_1, Re_start; incr = false)
-# lsa_around_bif_point(foldercont, folderlsa, name, start1, start2, max_steps, 2, p)
+df_1 = filter(row -> row.Re < 100, df)
+Re_start = 67
+start1, start2 = get_Re_start(df_1, Re_start; incr = false)
+lsa_around_bif_point(foldercont, folderlsa, name, start1, start2, max_steps, 2, p)
 
 df_lsa = CSV.read("$folderlsa/results_$(name).csv", DataFrame)
 i_pf1 = argmin(df_lsa.Re)
@@ -134,10 +134,10 @@ gif_lambdas(folderlsa, name)
 
 ### Pitchfork 2 ###
 name = "pf2"
-# df_2 = filter(row -> row.Re > 100, df)
-# Re_start = 173.5
-# start1, start2 = get_Re_start(df_2, Re_start; incr = false)
-# lsa_around_bif_point(foldercont, folderlsa, name, start1, start2, max_steps, 2, p)
+df_2 = filter(row -> row.Re > 100, df)
+Re_start = 173.5
+start1, start2 = get_Re_start(df_2, Re_start; incr = false)
+lsa_around_bif_point(foldercont, folderlsa, name, start1, start2, max_steps, 2, p)
 
 df_lsa = CSV.read("$folderlsa/results_$(name).csv", DataFrame)
 i_pf2 = argmin(df_lsa.Re)
@@ -146,10 +146,10 @@ gif_lambdas(folderlsa, name)
 
 ### Branch 2 ###
 name = "sn_branch2"
-# df_branch2 = CSV.read("$foldercont_branch2/results.csv", DataFrame)
-# Re_start = 354
-# start1, start2 = get_Re_start(df_branch2, Re_start; incr = false)
-# lsa_around_bif_point(foldercont_branch2, folderlsa, name, start1, start2, max_steps, 2, p)
+df_branch2 = CSV.read("$foldercont_branch2/results.csv", DataFrame)
+Re_start = 354
+start1, start2 = get_Re_start(df_branch2, Re_start; incr = false)
+lsa_around_bif_point(foldercont_branch2, folderlsa, name, start1, start2, max_steps, 2, p)
 
 df_lsa = CSV.read("$folderlsa/results_$(name).csv", DataFrame)
 i_sn = argmin(df_lsa.Re)

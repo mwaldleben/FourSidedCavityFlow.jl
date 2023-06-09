@@ -22,8 +22,8 @@ foldercont = "continuation$(n)x$(n)"
 # mkdir(foldercont)
 
 # include("study_continuation.jl")
-include("study_converge_psis.jl")
-include("study_bifurcation_diag.jl")
-include("study_branch2.jl")
+# include("study_converge_psis.jl")
+# include("study_bifurcation_diag.jl")
+# include("study_branch2.jl")
 include("study_linearstability.jl")
-# include("study_converge_psis_bifurcation.jl")
+include("study_converge_psis_bifurcation.jl")
