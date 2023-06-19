@@ -20,7 +20,7 @@ function newton1D(f::Function, x0, p, abstol = 1e-10, maxiters = 100)
     end
 
     if tol > abstol && iter == maxiters
-        @warn "Newton did not converge in $iter iterations."
+        @warn "Newton 1D did not converge in $iter iterations."
     end
 
     return x, iter, tol
