@@ -1,11 +1,11 @@
 """
-    diff_chebyshev(n, length)
+    diff_chebyshev(n)
 
 Compute the Chebyshev differentiation matrix with `n`+1 points in the
-interval [length, -length] which defaults to [1, -1]. Returns a vector of nodes 
-and the matrices for the first, second and fourth derivatives.
+[1, -1]. Returns a vector of nodes and the matrices for the first,
+second and fourth derivatives.
 """
-function diff_chebyshev(n::Int; length = 1::Real)
+function diff_chebyshev(n::Int)
     # Define nodes in [1, -1]
     nodes = [cos(k * π / n) for k in 0:n]
 
@@ -19,18 +19,8 @@ function diff_chebyshev(n::Int; length = 1::Real)
     s = sum(D1; dims = 2)
     D1 -= diagm(s[:, 1])
 
-    # Change interval if necessary
-    if length ≠ 1
-        a = length / 2
-        b = -length / 2
-        nodes = @. a + (b - a) * (nodes - 1) / 2
-        D1 = 2 * D1 / (b - a)
-    end
-
-    # Second derivative
+    # Second and fourth derivative
     D2 = D1^2
-
-    # Fourth derivative
     D4 = D2^2
 
     return nodes, D1, D2, D4
