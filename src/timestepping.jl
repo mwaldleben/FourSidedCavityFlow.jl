@@ -1,72 +1,46 @@
-function timestepping(Ψstart, p::CavityStruct, Δt, timesteps; convergence_check = false,
-    verbose = false)
-    @unpack n = p.params
+function timestepping(Ψinit, p::CavityStruct, h, timesteps; save = false, verbose = false)
+    @unpack n, ic, Ψi = p.params
     @unpack Ψ, Ψ0 = p.cache
 
-    @inbounds Ψ0 .= Ψstart
-    @inbounds u0 = reshape(Ψstart[3:(n - 1), 3:(n - 1)], (n - 3) * (n - 3))
+    @inbounds Ψi .= Ψinit
+    @inbounds u = reshape(Ψinit[3:(n - 1), 3:(n - 1)], (n - 3) * (n - 3))
 
-    ft!(fu, u, p) = ftime!(fu, u, p, Δt)
-
-    nc = Int(ceil((n - 3) * (n - 3) / 2))
+    ft!(fu, u, p) = ftime!(fu, u, p, h)
 
     if verbose == true
         @printf("  %-10s %-10s %-10s %-10s\n", "Timestep", "Ψc", "Newton[s]", "Iters.")
     end
 
-    for timestep in 1:timesteps
-        time = @elapsed u, iter, tol = newton(ft!, u0, p)
+    if save == true
+        sol = Vector{typeof(Ψi)}(undef, timesteps)
+        time = Vector{Float64}(undef, timesteps)
+
+        sol[1] = Ψi
+        time[1] = 0
+    end
+
+    for ts in 1:timesteps
+        newton_time = @elapsed u, iter, tol = newton(ft!, u, p)
 
         Ψ[3:(n - 1), 3:(n - 1)] .= reshape(u, (n - 3, n - 3))
 
-        if verbose == true
-            @printf("  %-10d %-+10.6f %-10.6f %-10d\n", timestep, u[nc], time, iter)
-        end
-
-        if convergence_check == true
-            if abs(u0[nc] - u[nc]) < 1e-8
-                println(abs(u0[nc] - u[nc]))
-                @printf("  ... center value converged")
-                break
-            end
-        end
-
-        u0 .= u
-
-        # TODO: why error when removing
-        Ψ0 .= Ψ
-    end
-
-    constructBC!(Ψ, p)
-
-    return Ψ
-end
-
-function timestepping_save(Ψstart, p::CavityStruct, Δt, steps)
-    @unpack n = p.params
-    @unpack n, Ψ, Ψ0 = p.cache
-
-    @inbounds Ψ0 .= Ψstart
-    @inbounds u0 = reshape(Ψstart[3:(n - 1), 3:(n - 1)], (n - 3) * (n - 3))
-    fu = similar(u0)
-
-    ft!(fu, u, p) = ftime!(fu, u, p, Δt)
-
-    sol = Vector{typeof(Ψstart)}(undef, steps)
-    time_series = Vector{Float64}(undef, steps)
-
-    sol[1] = Ψstart
-    time_series[1] = 0
-
-    for i in 1:(steps - 1)
-        u0, iter, tol = newton(ft!, u0, p)
-
-        Ψ[3:(n - 1), 3:(n - 1)] .= reshape(u0, (n - 3, n - 3))
         constructBC!(Ψ, p)
 
-        sol[i + 1] = Ψ
-        time_series[i + 1] = Δt * i
+        if verbose == true
+            @printf("  %-10d %-+10.6f %-10.6f %-10d\n", ts, Ψi[ic, ic], newton_time, iter)
+        end
+
+        if save == true
+            sol[ts + 1] = copy(Ψ)
+            time[ts + 1] = h * ts
+        end
+
+        Ψi .= Ψ
     end
 
-    return sol, time_series
+    if save == true
+        return sol, time
+    else
+        return Ψi
+    end
 end

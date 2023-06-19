@@ -4,11 +4,11 @@
         Re = 100
         p = CF.setup_struct(n, Re)
 
-        Δt = 1
+        h = 1
         timesteps = 200
-        Ψ0 = ones((n + 1, n + 1))
+        Ψi = ones((n + 1, n + 1))
 
-        Ψ200 = CF.timestepping(Ψ0, p, Δt, timesteps)
+        Ψ200 = CF.timestepping(Ψi, p, h, timesteps)
 
         Ψ200_ref = [0 0 0 0 0 0 0
             0 0.0223534291102081 0.0655941971343996 0.0589510766581025 0.0555732229353761 0.0204248917264253 0

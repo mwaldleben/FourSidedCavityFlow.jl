@@ -105,7 +105,7 @@
         p = CF.setup_struct(n, Re)
 
         u0 = zeros((n - 3) * (n - 3))
-        p.params.Ψstart .= zeros(n + 1, n + 1)
+        p.params.Ψi .= zeros(n + 1, n + 1)
         fu = similar(u0)
 
         Δt = 1

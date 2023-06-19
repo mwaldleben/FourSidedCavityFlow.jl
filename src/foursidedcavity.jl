@@ -1,7 +1,7 @@
 mutable struct CavityParameters{T <: Real}
     # Parameters which are change
     Re::T
-    Ψstart::Matrix{T}
+    Ψi::Matrix{T}
 
     # Fixed parameters 
     n::Int64  # dimension: n+1 
@@ -63,10 +63,10 @@ function setup_struct(n, Re)
     Minv = constructBC_matrix(D1)
 
     scl = 1e6
-    Ψstart = zeros(n + 1, n + 1)
+    Ψi = zeros(n + 1, n + 1)
 
     params = CavityParameters{Float64}(Re,
-        Ψstart,
+        Ψi,
         n,
         ic,
         i1,
@@ -181,7 +181,6 @@ function f!(fu, u, p::CavityStruct)
     @unpack fΨ, Ψ, D2Ψ, ΨD2, D4Ψ, ΨD4, laplΨ, biharmΨ = p.cache
 
     @inbounds @views Ψ[3:(n - 1), 3:(n - 1)][:] .= u
-    # @inbounds Ψ[3:(n - 1),3:(n - 1)] = reshape(u, n - 3 , n - 3)
 
     constructBC!(Ψ, p)
 
@@ -205,17 +204,15 @@ function f!(fu, u, p::CavityStruct)
     @inbounds @. fΨ = (1 / Re) * biharmΨ - laplΨ
 
     @inbounds @views fu .= fΨ[3:(n - 1), 3:(n - 1)][:]
-    # @inbounds fu .= reshape(fΨ[3:(n - 1), 3:(n - 1)], (n - 3) * (n - 3))
 
     return nothing
 end
 
 function ftime!(fu, u, p::CavityStruct, Δt)
-    @unpack Re, n, D1, D2, D4 = p.params
-    @unpack fΨ, Ψ, D2Ψ, ΨD2, D4Ψ, ΨD4, laplΨ, biharmΨ, Ψ0, laplΨ0, nonlinΨ = p.cache
+    @unpack Re, Ψi, n, D1, D2, D4 = p.params
+    @unpack fΨ, Ψ, D2Ψ, ΨD2, D4Ψ, ΨD4, laplΨ, biharmΨ, laplΨ0, nonlinΨ = p.cache
 
     @inbounds @views Ψ[3:(n - 1), 3:(n - 1)][:] .= u
-    # @inbounds Ψ[3:(n - 1), 3:(n - 1)] = reshape(u, n - 3, n - 3)
 
     constructBC!(Ψ, p)
 
@@ -230,8 +227,8 @@ function ftime!(fu, u, p::CavityStruct, Δt)
     @inbounds @. biharmΨ = D4Ψ + ΨD4 + 2 * laplΨ
     @inbounds @. laplΨ = D2Ψ + ΨD2
 
-    mul!(D2Ψ, D2, Ψ0)
-    mul!(ΨD2, Ψ0, D2')
+    mul!(D2Ψ, D2, Ψi)
+    mul!(ΨD2, Ψi, D2')
 
     @inbounds @. laplΨ0 = D2Ψ + ΨD2
 
@@ -247,7 +244,6 @@ function ftime!(fu, u, p::CavityStruct, Δt)
     @inbounds @. fΨ = Δt * fΨ - laplΨ + laplΨ0
 
     @inbounds @views fu .= fΨ[3:(n - 1), 3:(n - 1)][:]
-    # @inbounds fu .= reshape(fΨ[3:(n - 1), 3:(n - 1)], (n - 3) * (n - 3))
 
     return nothing
 end
