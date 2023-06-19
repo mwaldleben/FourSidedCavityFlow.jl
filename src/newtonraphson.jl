@@ -20,7 +20,7 @@ function newton1D(f::Function, x0, p, abstol = 1e-10, maxiters = 100)
     end
 
     if tol > abstol && iter == maxiters
-        @warn "Newton 1D did not converge in $iter iterations."
+        @warn("Newton 1D did not converge in $iter iterations.")
     end
 
     return x, iter, tol
@@ -29,16 +29,14 @@ end
 function newton(f!::Function, x0, p, newton_cache; abstol = 1e-10, maxiters = 100)
     x, fx, dx, J, jac_cache = newton_cache
 
-    f1!(fx, x) = f!(fx, x, p)
-
     @inbounds x .= x0
-    f1!(fx, x)
+    f!(fx, x, p)
 
     iter = 0
     tol = 1.0
 
     while tol > abstol && iter < maxiters
-        FiniteDiff.finite_difference_jacobian!(J, f1!, x, jac_cache)
+        FiniteDiff.finite_difference_jacobian!(J, (fx, x) -> f!(fx, x, p), x, jac_cache)
 
         dx = J \ fx
         @. x -= dx
@@ -50,7 +48,7 @@ function newton(f!::Function, x0, p, newton_cache; abstol = 1e-10, maxiters = 10
     end
 
     if tol > abstol && iter == maxiters
-        @warn "Newton did not converge in $iter iterations."
+        @warn("Newton did not converge in $iter iterations.")
     end
 
     return x, iter, tol

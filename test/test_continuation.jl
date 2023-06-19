@@ -27,7 +27,7 @@
 
         rm(foldercont; recursive = true)
     end
-    @testset "newton_for_continuation" begin
+    @testset "newton_continuation" begin
         n = 6
         Re = 100
         p = CF.setup_struct(n, Re)
@@ -37,8 +37,8 @@
         x2 = 2 * ones((n - 3) * (n - 3) + 1)
         s = 0.05
 
-        x, iter, tol = CF.newton_for_continuation(CF.f!, x1, x2, s, p; tolmax = 1e-10,
-            maxiter = 1)
+        x, iter, tol = CF.newton_continuation(CF.f!, x1, x2, s, p; abstol = 1e-10,
+            maxiters = 1)
         x_ref = [
             1.81433267406029,
             1.82898296631620,
