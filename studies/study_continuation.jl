@@ -1,6 +1,6 @@
 println("--- Continuation: ---")
 
-Re_start = 100 
+Re_start = 100
 p.params.Re = Re_start
 steps = 140
 Δt = 1
@@ -9,7 +9,6 @@ steps = 140
 println("Calculate unstable solution at Re_start = $Re_start:")
 Ψt = @time CF.timestepping(Ψi, p, Δt, steps)
 Ψs, iter, tol = CF.steadystate(Ψt, p)
-
 
 ΔRe = 1
 steps = 840

@@ -16,7 +16,7 @@ function diff_chebyshev(n::Int; length = 1::Real)
 
     # Diagonal entries
     D1[isinf.(D1)] .= 0
-    s = sum(D1, dims = 2)
+    s = sum(D1; dims = 2)
     D1 -= diagm(s[:, 1])
 
     # Change interval if necessary

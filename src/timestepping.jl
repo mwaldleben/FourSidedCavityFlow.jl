@@ -1,4 +1,5 @@
-function timestepping(Ψstart, p::CavityStruct, Δt, timesteps; convergence_check=false, verbose=false)
+function timestepping(Ψstart, p::CavityStruct, Δt, timesteps; convergence_check = false,
+    verbose = false)
     @unpack n = p.params
     @unpack Ψ, Ψ0 = p.cache
 
@@ -7,7 +8,7 @@ function timestepping(Ψstart, p::CavityStruct, Δt, timesteps; convergence_chec
 
     ft!(fu, u, p) = ftime!(fu, u, p, Δt)
 
-    nc = Int(ceil((n-3)*(n-3)/2)) 
+    nc = Int(ceil((n - 3) * (n - 3) / 2))
 
     if verbose == true
         @printf("  %-10s %-10s %-10s %-10s\n", "Timestep", "Ψc", "Newton[s]", "Iters.")
@@ -33,7 +34,7 @@ function timestepping(Ψstart, p::CavityStruct, Δt, timesteps; convergence_chec
         u0 .= u
 
         # TODO: why error when removing
-        Ψ0 .= Ψ 
+        Ψ0 .= Ψ
     end
 
     constructBC!(Ψ, p)

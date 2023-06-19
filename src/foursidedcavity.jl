@@ -51,7 +51,7 @@ function setup_struct(n, Re)
 
     ic = floor(n / 2) + 1
     i1 = floor(n / 4) + 1
-    i2 = 3*floor(n / 4) + 1
+    i2 = 3 * floor(n / 4) + 1
 
     k0 = 10
     bcfunc(x) = ((exp(k0 * (x - 1)) - 1) * (exp(-k0 * (x + 1)) - 1))^2
@@ -65,8 +65,25 @@ function setup_struct(n, Re)
     scl = 1e6
     Ψstart = zeros(n + 1, n + 1)
 
-    params = CavityParameters{Float64}(Re, Ψstart, n, ic, i1, i2, nodes, D1, D2, D4, bcleft, bcright, bctop,
-                                       bcbottom, Minv[1, 1], Minv[1, 2], Minv[2, 1], Minv[2, 2], scl)
+    params = CavityParameters{Float64}(Re,
+        Ψstart,
+        n,
+        ic,
+        i1,
+        i2,
+        nodes,
+        D1,
+        D2,
+        D4,
+        bcleft,
+        bcright,
+        bctop,
+        bcbottom,
+        Minv[1, 1],
+        Minv[1, 2],
+        Minv[2, 1],
+        Minv[2, 2],
+        scl)
 
     h1 = similar(bctop[3:(n - 1)])
     h2 = similar(bctop[3:(n - 1)])
@@ -85,8 +102,8 @@ function setup_struct(n, Re)
     laplΨ0 = similar(Ψ)
     nonlinΨ = similar(Ψ)
 
-    cache = CavityCache{Float64}(h1, h2, k1, k2, Ψ, fΨ, D2Ψ, ΨD2, D4Ψ, ΨD4,
-                                 biharmΨ, laplΨ, Ψ0, laplΨ0, nonlinΨ)
+    cache = CavityCache{Float64}(h1, h2, k1, k2, Ψ, fΨ, D2Ψ, ΨD2, D4Ψ, ΨD4, biharmΨ, laplΨ,
+        Ψ0, laplΨ0, nonlinΨ)
 
     p = CavityStruct{Float64}(params, cache)
 
@@ -100,7 +117,7 @@ function constructBC_matrix(D)
 end
 
 function constructBC!(Ψ, p::CavityStruct)
-    @unpack n, D1, m11, m12, m21, m22, bcleft, bcright, bctop, bcbottom = p.params 
+    @unpack n, D1, m11, m12, m21, m22, bcleft, bcright, bctop, bcbottom = p.params
     @unpack h1, h2, k1, k2 = p.cache
 
     @inbounds @views Ψ1 = Ψ[3:(n - 1), 3:(n - 1)]
@@ -133,11 +150,11 @@ function constructBC(u, p::CavityStruct)
 
     constructBC!(Ψ, p)
 
-    return Ψ 
+    return Ψ
 end
 
 function construct_homogenousBC!(Ψ, p::CavityStruct)
-    @unpack n, D1, m11, m12, m21, m22, bcleft, bcright, bctop, bcbottom = p.params 
+    @unpack n, D1, m11, m12, m21, m22, bcleft, bcright, bctop, bcbottom = p.params
     @unpack h1, h2, k1, k2 = p.cache
 
     @inbounds @views Ψ1 = Ψ[3:(n - 1), 3:(n - 1)]

@@ -23,37 +23,38 @@ i_pf2 = argmin(abs.(df2.psi_c))
 pf2 = df2[i_pf2, :]
 
 # Create bifurcation curve
-plt = plot(xlim = (0, 400),
-           ylim = (-0.35, 0.35),
-           xtickfontsize = 7,
-           ytickfontsize = 7,
-           xlabel = L"\mathrm{Re}",
-           ylabel = L"\Psi_{center}",
-           xlabelfontsize = 12,
-           ylabelfontsize = 12,
-           thickness_scaling = 0.6,
-           margin = 12Plots.mm,
-           legend = false,
-           grid = false,
-           dpi = 800)
+plt = plot(;
+    xlim = (0, 400),
+    ylim = (-0.35, 0.35),
+    xtickfontsize = 7,
+    ytickfontsize = 7,
+    xlabel = L"\mathrm{Re}",
+    ylabel = L"\Psi_{center}",
+    xlabelfontsize = 12,
+    ylabelfontsize = 12,
+    thickness_scaling = 0.6,
+    margin = 12Plots.mm,
+    legend = false,
+    grid = false,
+    dpi = 800)
 
 # Plot unstable asymmetric solutions
 Re_hopf = 348 # TODO: has to be calculated
 psi_c_hopf = 0.1690
 df_unstab1 = filter(row -> row.Re > 150 && pf2.psi_c <= row.psi_c <= sn1.psi_c, df)
-plot!(df_unstab1.Re, df_unstab1.psi_c, linestyle = :dot, linecolor = :black)
+plot!(df_unstab1.Re, df_unstab1.psi_c; linestyle = :dot, linecolor = :black)
 
 df_unstab2 = filter(row -> row.Re > 150 && sn2.psi_c <= row.psi_c <= pf2.psi_c, df)
-plot!(df_unstab2.Re, df_unstab2.psi_c, linestyle = :dot, linecolor = :black)
+plot!(df_unstab2.Re, df_unstab2.psi_c; linestyle = :dot, linecolor = :black)
 
 df_unstab_hopf1 = filter(row -> row.Re >= Re_hopf && row.psi_c > sn1.psi_c, df)
-plot!(df_unstab_hopf1.Re, df_unstab_hopf1.psi_c, linestyle = :dot, linecolor = :black)
+plot!(df_unstab_hopf1.Re, df_unstab_hopf1.psi_c; linestyle = :dot, linecolor = :black)
 
 df_unstab_hopf2 = filter(row -> row.Re >= Re_hopf && row.psi_c < sn2.psi_c, df)
-plot!(df_unstab_hopf2.Re, df_unstab_hopf2.psi_c, linestyle = :dot, linecolor = :black)
+plot!(df_unstab_hopf2.Re, df_unstab_hopf2.psi_c; linestyle = :dot, linecolor = :black)
 
 df_unstab_hopf2 = filter(row -> row.Re > 150 && sn2.psi_c <= row.psi_c <= pf2.psi_c, df)
-plot!(df_unstab2.Re, df_unstab2.psi_c, linestyle = :dot, linecolor = :black)
+plot!(df_unstab2.Re, df_unstab2.psi_c; linestyle = :dot, linecolor = :black)
 
 # Plot stable asymmetric solutions
 # sort!(df_stab1, "Re")
@@ -61,29 +62,29 @@ df_stab1a = filter(row -> 150 <= row.Re <= Re_hopf && row.psi_c > sn1.psi_c, df_
 df_stab1b = filter(row -> row.Re <= 160, df_pos)
 sort!(df_stab1a, "Re")
 sort!(df_stab1b, "Re")
-plot!(df_stab1a.Re, df_stab1a.psi_c, linecolor = :black)
-plot!(df_stab1b.Re, df_stab1b.psi_c, linecolor = :black)
+plot!(df_stab1a.Re, df_stab1a.psi_c; linecolor = :black)
+plot!(df_stab1b.Re, df_stab1b.psi_c; linecolor = :black)
 
 df_stab2a = filter(row -> 150 <= row.Re <= Re_hopf && row.psi_c < sn2.psi_c, df_neg)
 df_stab2b = filter(row -> row.Re <= 160, df_neg)
 sort!(df_stab2a, "Re")
 sort!(df_stab2b, "Re")
-plot!(df_stab2a.Re, df_stab2a.psi_c, linecolor = :black)
-plot!(df_stab2b.Re, df_stab2b.psi_c, linecolor = :black)
+plot!(df_stab2a.Re, df_stab2a.psi_c; linecolor = :black)
+plot!(df_stab2b.Re, df_stab2b.psi_c; linecolor = :black)
 
 # Plot stable symmetric solutions
-Re_stab1 = range(0, pf1.Re, length = 100)
+Re_stab1 = range(0, pf1.Re; length = 100)
 ψstab1 = zeros(size(Re_stab1))
-plot!(Re_stab1, ψstab1, linecolor = :black)
+plot!(Re_stab1, ψstab1; linecolor = :black)
 
-Re_stab2 = range(pf2.Re, 400, length = 100)
+Re_stab2 = range(pf2.Re, 400; length = 100)
 ψstab2 = zeros(size(Re_stab2))
-plot!(Re_stab2, ψstab2, linecolor = :black)
+plot!(Re_stab2, ψstab2; linecolor = :black)
 
 # Plot unstable symmetric solution
-Re_unstab = range(pf1.Re, pf2.Re, length = 100)
+Re_unstab = range(pf1.Re, pf2.Re; length = 100)
 ψunstab = zeros(size(Re_unstab))
-plot!(Re_unstab, ψunstab, linestyle = :dot, linecolor = :black)
+plot!(Re_unstab, ψunstab; linestyle = :dot, linecolor = :black)
 
 # Helper function to plot solutions as small inset frames (optional)
 function inset_plot(folder, name, Re, p, pos_relx, pos_rely, subplot_nb)
@@ -92,21 +93,21 @@ function inset_plot(folder, name, Re, p, pos_relx, pos_rely, subplot_nb)
     Ψ = readdlm("$folder/psi_Re$(@sprintf("%07.3f", Re))_$(name).txt")
 
     contour!(reverse(nodes),
-             reverse(nodes),
-             Ψ',
-             title = L"\mathrm{Re} \; %$(Re)",
-             titlefontsize = 9,
-             inset = (1, bbox(pos_relx, pos_rely, 0.13, 0.13, :bottom, :left)),
-             xlim = (-1, 1),
-             ylim = (-1, 1),
-             aspect_ratio = 1,
-             axis = ([], false),
-             legend = false,
-             subplot = subplot_nb,
-             color = :davos,
-             bg_inside = "#f2f2f2",
-             dpi = 800)
-    scatter!([Re], [Ψ[ic, ic]], marker = :circle, markersize = 2, color = :black)
+        reverse(nodes),
+        Ψ';
+        title = L"\mathrm{Re} \; %$(Re)",
+        titlefontsize = 9,
+        inset = (1, bbox(pos_relx, pos_rely, 0.13, 0.13, :bottom, :left)),
+        xlim = (-1, 1),
+        ylim = (-1, 1),
+        aspect_ratio = 1,
+        axis = ([], false),
+        legend = false,
+        subplot = subplot_nb,
+        color = :davos,
+        bg_inside = "#f2f2f2",
+        dpi = 800)
+    return scatter!([Re], [Ψ[ic, ic]]; marker = :circle, markersize = 2, color = :black)
 end
 
 Re = 50

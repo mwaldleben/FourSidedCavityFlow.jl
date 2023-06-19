@@ -18,7 +18,7 @@ p = CF.setup_struct(n, 0)
 println("--- Run $(n)x$(n): ---")
 
 # Folder where results are stored 
-foldercont = "continuation$(n)x$(n)" 
+foldercont = "continuation$(n)x$(n)"
 # mkdir(foldercont)
 
 # include("study_continuation.jl")

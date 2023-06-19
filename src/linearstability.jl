@@ -93,7 +93,7 @@ function linearstability_lambdas(u, p)
     vals, _ = eigen(A, B) # generalized eigenvalues
 
     # Sorting complex lambdas lexicographically
-    lambdas = sort(vals, by = λ -> (floor(real(λ), digits = 5), imag(λ)), rev=true)
+    lambdas = sort(vals; by = λ -> (floor(real(λ); digits = 5), imag(λ)), rev = true)
     return lambdas
 end
 
@@ -108,12 +108,13 @@ function linearstability_lambdamax(Re, u, p::CavityStruct)
     linearstability_matrices!(A, B, u, p)
 
     vals, _ = eigen(A, B) # generalized eigenvalues
-    λmax = sort(real(vals), rev = true)[1]
+    λmax = sort(real(vals); rev = true)[1]
 
     return λmax
 end
 
-function newton1D_for_linearstability(Re0, u0, p::CavityStruct; tolmax = 1e-10, maxiter = 20, verbose = false)
+function newton1D_for_linearstability(Re0, u0, p::CavityStruct; tolmax = 1e-10,
+    maxiter = 20, verbose = false)
     @unpack n, scl = p.params
 
     Re = Re0
@@ -129,7 +130,7 @@ function newton1D_for_linearstability(Re0, u0, p::CavityStruct; tolmax = 1e-10, 
     end
 
     while tol > tolmax && iter < maxiter
-        time = @elapsed begin 
+        time = @elapsed begin
             # Refine solution for new Reynolds number
             p.params.Re = Re
             u, _, _ = newton(f!, u, p)

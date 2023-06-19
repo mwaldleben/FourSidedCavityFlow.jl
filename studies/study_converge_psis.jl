@@ -34,12 +34,11 @@ df_stab2 = filter(!(row -> row.Re > 150 && sn2.psi_c <= row.psi_c <= pf2.psi_c),
 df_unstab1 = filter(row -> row.Re > 150 && pf2.psi_c <= row.psi_c <= sn1.psi_c, df)
 df_unstab2 = filter(row -> row.Re > 150 && sn2.psi_c <= row.psi_c <= pf2.psi_c, df)
 
-
 # Helper function to converge to exact Re values
 # for asymmetric solutions
 function converge_and_save_asymΨ(folder, folderconv_psis, name, Re, df, p)
     println("Converge asymmetric psi $name: Re = $Re")
-    @unpack n,nodes = p.params
+    @unpack n, nodes = p.params
 
     # Find closest solution to use as initial guess
     i_cl = argmin(abs.(df.Re .- Re))
@@ -52,17 +51,17 @@ function converge_and_save_asymΨ(folder, folderconv_psis, name, Re, df, p)
     writedlm("$folderconv_psis/psi_Re$(@sprintf("%07.3f", Re))_$(name).txt", Ψ)
 
     plt = contourf(reverse(nodes),
-             reverse(nodes),
-             Ψ',
-             xlim = (-1, 1),
-             ylim = (-1, 1),
-             aspect_ratio = 1,
-             axis = ([], false),
-             legend = false,
-             color = :davos,
-             dpi = 800)
+        reverse(nodes),
+        Ψ';
+        xlim = (-1, 1),
+        ylim = (-1, 1),
+        aspect_ratio = 1,
+        axis = ([], false),
+        legend = false,
+        color = :davos,
+        dpi = 800)
     fileplt = "$folderconv_psis/psi_Re$(@sprintf("%07.3f", Re))_$(name).png"
-    savefig(plt, fileplt)
+    return savefig(plt, fileplt)
 end
 
 # Helper function to converge to symetric solutions
@@ -79,17 +78,17 @@ function converge_and_save_symΨ(folderconv_psis, name, Re, p)
 
     # Save plot
     plt = contourf(reverse(nodes),
-            reverse(nodes),
-             Ψ',
-             xlim = (-1, 1),
-             ylim = (-1, 1),
-             aspect_ratio = 1,
-             axis = ([], false),
-             legend = false,
-             color = :davos,
-             dpi = 800)
+        reverse(nodes),
+        Ψ';
+        xlim = (-1, 1),
+        ylim = (-1, 1),
+        aspect_ratio = 1,
+        axis = ([], false),
+        legend = false,
+        color = :davos,
+        dpi = 800)
     fileplt = "$folderconv_psis/psi_Re$(@sprintf("%07.3f", Re))_$(name).png"
-    savefig(plt, fileplt)
+    return savefig(plt, fileplt)
 end
 
 # Generate solutions

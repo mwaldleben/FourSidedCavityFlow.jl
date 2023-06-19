@@ -51,23 +51,24 @@ df_upper = filter(row -> row.Re > 200 && row.psi_c > 0, df)
 df_branch2 = CSV.read("$foldercont_branch2/results.csv", DataFrame)
 
 # Create 3D bifurcation curves
-plt = plot(camera=(50,50),
-           xtickfontsize = 7,
-           ytickfontsize = 7,
-           ztickfontsize = 7,
-           xlabel = L"\mathrm{Re}",
-           ylabel = L"u_{t}",
-           zlabel = L"\Psi_{center}",
-           xlabelfontsize = 12,
-           ylabelfontsize = 12,
-           zlabelfontsize = 12,
-           thickness_scaling = 0.7,
-           margin = 12Plots.mm,
-           legend = false,
-           dpi = 800)
+plt = plot(;
+    camera = (50, 50),
+    xtickfontsize = 7,
+    ytickfontsize = 7,
+    ztickfontsize = 7,
+    xlabel = L"\mathrm{Re}",
+    ylabel = L"u_{t}",
+    zlabel = L"\Psi_{center}",
+    xlabelfontsize = 12,
+    ylabelfontsize = 12,
+    zlabelfontsize = 12,
+    thickness_scaling = 0.7,
+    margin = 12Plots.mm,
+    legend = false,
+    dpi = 800)
 
-plot!(df_branch2.Re, df_branch2.u_t, df_branch2.psi_c, linecolor = :green)
-plot!(df_upper.Re, df_upper.u_t, df_upper.psi_c, linecolor = :black)
+plot!(df_branch2.Re, df_branch2.u_t, df_branch2.psi_c; linecolor = :green)
+plot!(df_upper.Re, df_upper.u_t, df_upper.psi_c; linecolor = :black)
 
 fileplt = "$foldercont/bifurcation_diag$(n)x$(n)_branch2.png"
 savefig(plt, fileplt)

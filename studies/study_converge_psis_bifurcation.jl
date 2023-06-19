@@ -34,13 +34,13 @@ function converge_and_saveΨ_bif(folder, folderconv_psis, name, row_bif, p)
     u0 = Ψ0[3:(n - 1), 3:(n - 1)][:]
 
     Re0 = row_bif.Re
-    Re, u, _, _ = CF.newton1D_for_linearstability(Re0, u0, p; tolmax = 1e-12,
-                                                       maxiter = 10, verbose = true)
+    Re, u, _, _ = CF.newton1D_for_linearstability(Re0, u0, p; tolmax = 1e-12, maxiter = 10,
+        verbose = true)
     p.params.Re = Re
     Ψ = CF.constructBC(u, p)
 
     println("  $name : Re = $Re")
-    writedlm("$folderconv_psis/psi_Re$(@sprintf("%07.3f", Re))_$(name).txt", Ψ)
+    return writedlm("$folderconv_psis/psi_Re$(@sprintf("%07.3f", Re))_$(name).txt", Ψ)
 end
 
 # Converge bifurcation points

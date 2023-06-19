@@ -11,36 +11,64 @@ df_pos = filter(row -> row.psi_c > 0, df)
 df_neg = filter(row -> row.psi_c < 0, df)
 
 # Helper function to do stability analysis around bifurcation point
-function lsa_around_bif_point(foldercont, folderlsa, name, start1, start2, max_steps, Re_stop_mode, p)
+function lsa_around_bif_point(foldercont, folderlsa, name, start1, start2, max_steps,
+    Re_stop_mode, p)
     Ψi1 = readdlm("$foldercont/psis/psi_step$(@sprintf("%03d", start1.step))_Re$(@sprintf("%07.3f", start1.Re)).txt")
     Ψi2 = readdlm("$foldercont/psis/psi_step$(@sprintf("%03d", start2.step))_Re$(@sprintf("%07.3f", start2.Re)).txt")
 
     println("Arclength continuation with linear stability analysis $(name), max_steps = $max_steps:")
-    @time CF.continuation_arclength_lsa(folderlsa, name, Ψi1, Ψi2, p, start1.Re, start2.Re, max_steps; Re_stop_mode = Re_stop_mode)
+    @time CF.continuation_arclength_lsa(folderlsa,
+        name,
+        Ψi1,
+        Ψi2,
+        p,
+        start1.Re,
+        start2.Re,
+        max_steps;
+        Re_stop_mode = Re_stop_mode)
 end
 
 # Helper function to plot lambdas 
 function plot_lambdas(df_lsa, folderlsa, name)
     c = palette(:Dark2_5).colors.colors
 
-    plt = plot(xtickfontsize = 7,
-                  ytickfontsize = 7,
-                  thickness_scaling = 0.7,
-                  xlabel = L"\mathrm{Re}",
-                  ylabel = L"Real(\lambda)",
-                  xlabelfontsize = 12,
-                  ylabelfontsize = 12,
-                  margin = 12Plots.mm,
-                  legend = false,
-                  palette = :Dark2_5, 
-                  dpi = 800)
+    plt = plot(;
+        xtickfontsize = 7,
+        ytickfontsize = 7,
+        thickness_scaling = 0.7,
+        xlabel = L"\mathrm{Re}",
+        ylabel = L"Real(\lambda)",
+        xlabelfontsize = 12,
+        ylabelfontsize = 12,
+        margin = 12Plots.mm,
+        legend = false,
+        palette = :Dark2_5,
+        dpi = 800)
 
-    plot!(plt, df_lsa.Re, df_lsa.lambda1re, marker = :circle, markersize = 3, linecolor = c[1], label = L"\lambda_1")
-    plot!(plt, df_lsa.Re, df_lsa.lambda2re, marker = :cross, markersize = 4, linecolor = c[2], label = L"\lambda_2")
-    plot!(plt, df_lsa.Re, df_lsa.lambda3re, marker = :x, markersize = 2, linecolor = c[3], label = L"\lambda_3")
+    plot!(plt,
+        df_lsa.Re,
+        df_lsa.lambda1re;
+        marker = :circle,
+        markersize = 3,
+        linecolor = c[1],
+        label = L"\lambda_1")
+    plot!(plt,
+        df_lsa.Re,
+        df_lsa.lambda2re;
+        marker = :cross,
+        markersize = 4,
+        linecolor = c[2],
+        label = L"\lambda_2")
+    plot!(plt,
+        df_lsa.Re,
+        df_lsa.lambda3re;
+        marker = :x,
+        markersize = 2,
+        linecolor = c[3],
+        label = L"\lambda_3")
 
     fileplt = "$folderlsa/lsa_$(name).png"
-    savefig(plt, fileplt)
+    return savefig(plt, fileplt)
 end
 
 # Helper function to make a gif of real and imaginary part
@@ -56,26 +84,27 @@ function gif_lambdas(folderlsa, name)
         ymax = 0.01
     end
 
-    plot(xlim = (-0.1, 0.1),
-         ylim = (-ymax-0.2*ymax, ymax+0.2*ymax),
-                  ytickfontsize = 7,
-                  thickness_scaling = 0.7,
-                  xlabel = L"Real(\lambda)",
-                  ylabel = L"Imag(\lambda)",
-                  xlabelfontsize = 12,
-                  ylabelfontsize = 12,
-                  margin = 12Plots.mm,
-                  legend = false,
-                  dpi = 800)
+    plot(;
+        xlim = (-0.1, 0.1),
+        ylim = (-ymax - 0.2 * ymax, ymax + 0.2 * ymax),
+        ytickfontsize = 7,
+        thickness_scaling = 0.7,
+        xlabel = L"Real(\lambda)",
+        ylabel = L"Imag(\lambda)",
+        xlabelfontsize = 12,
+        ylabelfontsize = 12,
+        margin = 12Plots.mm,
+        legend = false,
+        dpi = 800)
 
-    anim = @animate for i in 1:size(df_lsa,1)
-        scatter!([df_lsa.lambda1re[i]], [df_lsa.lambda1im[i]], color = c[1])
-        scatter!([df_lsa.lambda2re[i]], [df_lsa.lambda2im[i]], color = c[2])
-        scatter!([df_lsa.lambda3re[i]], [df_lsa.lambda3im[i]], color = c[3])
+    anim = @animate for i in 1:size(df_lsa, 1)
+        scatter!([df_lsa.lambda1re[i]], [df_lsa.lambda1im[i]]; color = c[1])
+        scatter!([df_lsa.lambda2re[i]], [df_lsa.lambda2im[i]]; color = c[2])
+        scatter!([df_lsa.lambda3re[i]], [df_lsa.lambda3im[i]]; color = c[3])
     end
 
     filegif = "$folderlsa/lsa_$(name).gif"
-    gif(anim, filegif, fps=6)
+    return gif(anim, filegif; fps = 6)
 end
 
 # Helper function to start LSA
@@ -108,7 +137,7 @@ max_steps = 50
 
 ### Saddle node ###
 name = "sn"
-Re_start = 346 
+Re_start = 346
 start1, start2 = get_Re_start(df, Re_start)
 lsa_around_bif_point(foldercont, folderlsa, name, start1, start2, max_steps, 1, p)
 
