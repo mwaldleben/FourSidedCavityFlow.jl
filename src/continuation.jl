@@ -75,18 +75,14 @@ function continuation_arclength_lsa(folderlsa, name, Ψi1, Ψi2, p::CavityStruct
     write_header_lsa(filelsa)
 
     p.params.Re = Re1
-    dim = (n - 3) * (n - 3)
-    @inbounds u0 = reshape(Ψi1[3:(n - 1), 3:(n - 1)], dim)
-    u1, _, _ = newton(f!, u0, p)
-    Ψ1 = constructBC(u1, p)
-    lsa_time = @elapsed lambdas = linearstability_lambdas(u1[1:(end - 1)], p)
-    save_result(filelsa, Ψ1, 0, 0, 0.0, p)
+    @inbounds u1 = reshape(Ψi1[3:(n - 1), 3:(n - 1)], (n - 3) * (n - 3))
+    lsa_time = @elapsed lambdas = linearstability_lambdas(u1, p)
+    save_result_lsa(filelsa, Ψi1, 0, lambdas, lsa_time, 0, 0, p)
 
     p.params.Re = Re2
-    u2, _, _ = newton(f!, u0, p)
-    Ψ2 = constructBC(u2, p)
-    lsa_time = @elapsed lambdas = linearstability_lambdas(u2[1:(end - 1)], p)
-    save_result(filelsa, Ψ2, 1, 0, 0.0, p)
+    @inbounds u2 = reshape(Ψi2[3:(n - 1), 3:(n - 1)], (n - 3) * (n - 3))
+    lsa_time = @elapsed lambdas = linearstability_lambdas(u2, p)
+    save_result_lsa(filelsa, Ψi2, 1, lambdas, lsa_time, 0, 0, p)
 
     # Augmented system
     x1 = [u1; p.params.Re / scl]
@@ -114,12 +110,7 @@ function continuation_arclength_lsa(folderlsa, name, Ψi1, Ψi2, p::CavityStruct
     cont_cache = (x, fx, dx, v, xp, xi, fxi, fxi_Re, J, J2, jac_cache)
 
     for i in 2:(steps)
-        newton_time = @elapsed tmp, iter, _ = newton_continuation(f!,
-            x1,
-            x2,
-            s,
-            p,
-            cont_cache)
+        newton_time = @elapsed tmp, iter, _ = newton_continuation(f!, x1, x2, s, p, cont_cache)
 
         x1 .= x2
         x2 .= tmp
@@ -141,7 +132,7 @@ function continuation_arclength_lsa(folderlsa, name, Ψi1, Ψi2, p::CavityStruct
         p.params.Re = tmp[end] * scl
         Ψ = constructBC(tmp[1:(end - 1)], p)
 
-        lsa_time = @elapsed lambdas = linearstability_lambdas(u[1:(end - 1)], p)
+        lsa_time = @elapsed lambdas = linearstability_lambdas(tmp[1:(end - 1)], p)
         save_result_lsa(filelsa, Ψ, i, lambdas, lsa_time, iter, newton_time, p)
     end
     return
@@ -165,14 +156,8 @@ function continuation_arclength_lsa(folderlsa, name, Ψi, p::CavityStruct, Re_st
     return continuation_arclength_lsa(folderlsa, name, Ψi1, Ψi2, p, Re1, Re2, steps)
 end
 
-function newton_continuation(f!,
-    x1,
-    x2,
-    s,
-    p::CavityStruct,
-    cont_cache;
-    abstol = 1e-10,
-    maxiters = 100)
+function newton_continuation(f!, x1, x2, s, p::CavityStruct, cont_cache;
+    abstol = 1e-10, maxiters = 100)
     @unpack scl = p.params
 
     x, fx, dx, v, xp, xi, fxi, fxi_Re, J, J2, jac_cache = cont_cache
