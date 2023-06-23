@@ -60,6 +60,7 @@ function setup_struct(n, Re)
     bcright = bcfunc.(nodes)
     bctop = bcfunc.(nodes)
     bcbottom = -bcfunc.(nodes)
+
     Minv = constructBC_matrix(D1)
 
     scl = 1e6
@@ -201,7 +202,7 @@ function f!(fu, u, p::CavityStruct)
     mul!(D4Ψ, D1, laplΨ)
 
     @inbounds @. laplΨ = D2Ψ * ΨD4 - D4Ψ * ΨD2
-    @inbounds @. fΨ = (1 / Re) * biharmΨ - laplΨ
+    @inbounds @. fΨ = (1 / Re) * biharmΨ + laplΨ
 
     @inbounds @views fu .= fΨ[3:(n - 1), 3:(n - 1)][:]
 
@@ -239,7 +240,7 @@ function ftime!(fu, u, p::CavityStruct, Δt)
     mul!(D4Ψ, D1, laplΨ)
 
     @inbounds @. nonlinΨ = D2Ψ * ΨD4 - D4Ψ * ΨD2
-    @inbounds @. fΨ = (1 / Re) * biharmΨ - nonlinΨ
+    @inbounds @. fΨ = (1 / Re) * biharmΨ + nonlinΨ
 
     @inbounds @. fΨ = Δt * fΨ - laplΨ + laplΨ0
 
