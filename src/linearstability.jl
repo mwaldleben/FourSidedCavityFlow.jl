@@ -42,12 +42,8 @@ function f_linearstability!(fu, Ψ, Ψ0, p::CavityStruct)
     mul!(laplΨ, D2Ψ, D2') # using as intermediate memory
     @inbounds @. biharmΨ = D4Ψ + ΨD4 + 2 * laplΨ
 
-    # TODO: fix stream function formulation, problem with linebreak as well
-    # @inbounds @. fΨ = (1 / Re) * biharmΨ + D1Ψ0 * laplΨD1 
-    # + D1Ψ * laplΨ0D1 - Ψ0D1 * D1laplΨ - ΨD1 * D1laplΨ0 
-    # @inbounds @. fΨ = (1 / Re) * biharmΨ - D1Ψ0 * laplΨD1 - D1Ψ * laplΨ0D1 + Ψ0D1 * D1laplΨ + ΨD1 * D1laplΨ0 
-    @inbounds @. fΨ = (1 / Re) * biharmΨ - (D1Ψ0 .* laplΨD1 - Ψ0D1 .* D1laplΨ) -
-                      (D1Ψ .* laplΨ0D1 - ΨD1 .* D1laplΨ0)
+    @inbounds @. fΨ = (1 / Re) * biharmΨ + D1Ψ0 .* laplΨD1 - Ψ0D1 .* D1laplΨ +
+                      D1Ψ .* laplΨ0D1 - ΨD1 .* D1laplΨ0
 
     @inbounds @views fu .= fΨ[3:(n - 1), 3:(n - 1)][:]
 
