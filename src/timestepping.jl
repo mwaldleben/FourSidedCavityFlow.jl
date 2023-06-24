@@ -8,8 +8,9 @@ function timestepping(Ψinit, p::CavityStruct, h, timesteps; save = false, verbo
     ft!(fu, u, p) = ftime!(fu, u, p, h)
 
     if verbose == true
-        @printf("  %-10s %-10s %-10s %-10s\n", "Timestep", "Ψc", "Newton[s]", "Iters.")
-        @printf("  %-10d %-+10.6f %-10.6f %-10d\n", 0, Ψi[ic, ic], 0.0, 0)
+        @printf("  %-10s %-10s %-10s %-10s %-10s\n",
+            "Timestep", "Time", "Ψc", "Newton[s]", "Iters.")
+        @printf("  %-10d %-10.6f %-+10.6f %-10.6f %-10d\n", 0, 0.0, Ψi[ic, ic], 0.0, 0)
     end
 
     if save == true
@@ -32,19 +33,21 @@ function timestepping(Ψinit, p::CavityStruct, h, timesteps; save = false, verbo
     newton_cache = (x, fx, dx, J, jac_cache)
 
     for ts in 1:timesteps
+        now = h* ts
         newton_time = @elapsed u, iter, tol = newton(ft!, u, p, newton_cache)
 
         Ψ[3:(n - 1), 3:(n - 1)] .= reshape(u, (n - 3, n - 3))
 
         constructBC!(Ψ, p)
 
-        if verbose == true
-            @printf("  %-10d %-+10.6f %-10.6f %-10d\n", ts, Ψi[ic, ic], newton_time, iter)
-        end
-
         if save == true
             sol[ts + 1, :, :] = copy(Ψ)
-            time[ts + 1] = h * ts
+            time[ts + 1] = now 
+        end
+
+        if verbose == true
+            @printf("  %-10d %-10.6f %-+10.6f %-10.6f %-10d\n",
+                ts, now, Ψ[ic, ic], newton_time, iter)
         end
 
         Ψi .= Ψ

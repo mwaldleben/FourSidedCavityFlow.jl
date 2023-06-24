@@ -209,7 +209,7 @@ function f!(fu, u, p::CavityStruct)
     return nothing
 end
 
-function ftime!(fu, u, p::CavityStruct, Δt)
+function ftime!(fu, u, p::CavityStruct, h)
     @unpack Re, Ψi, n, D1, D2, D4 = p.params
     @unpack fΨ, Ψ, D2Ψ, ΨD2, D4Ψ, ΨD4, laplΨ, biharmΨ, laplΨ0, nonlinΨ = p.cache
 
@@ -242,7 +242,7 @@ function ftime!(fu, u, p::CavityStruct, Δt)
     @inbounds @. nonlinΨ = D2Ψ * ΨD4 - D4Ψ * ΨD2
     @inbounds @. fΨ = (1 / Re) * biharmΨ + nonlinΨ
 
-    @inbounds @. fΨ = Δt * fΨ - laplΨ + laplΨ0
+    @inbounds @. fΨ = h * fΨ - laplΨ + laplΨ0
 
     @inbounds @views fu .= fΨ[3:(n - 1), 3:(n - 1)][:]
 
