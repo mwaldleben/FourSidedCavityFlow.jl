@@ -9,7 +9,7 @@ example to compare discretizations and boundary conditions.
 [![Coverage](https://codecov.io/gh/morwald/FourSidedCavityFlow.jl/branch/main/graph/badge.svg?token=ZLZMNKQSU2)](https://codecov.io/gh/morwald/FourSidedCavityFlow.jl)
 
 
-![cavity](./cavity.png)
+<img src="./cavity.png" width=100% height=100%>
 
 This project aims at developing a set of numerical
 algorithms for the study of the dynamics, linear stability, and
