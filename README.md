@@ -33,14 +33,16 @@ the simulations.
 ### For development
 
 The Julia module is not yet a registered package. To work on the development
-version clone this git repository. Navigate to the root directory and start the Julia REPL. 
+version clone this git repository. Navigate to the root directory and start the
+Julia REPL. 
 ```bash
-git clone git@github.com:morwald/FourSidedCavityFlow.git
+git clone https://github.com/morwald/FourSidedCavityFlow.jl.git
 cd FourSidedCavityFlow.jl
 julia
 ```
 
-Inside the REPL open the built-in package manager Pkg by pressing `]` and then run.
+Inside the REPL open the built-in package manager Pkg by pressing `]` and then
+run.
 ```julia
 pkg>activate .
 pkg>instantiate
@@ -53,4 +55,5 @@ pkg>test
 
 ## Documentation
 
-The development documentation can be found [here](https://morwald.github.io/FourSidedCavityFlow.jl).
+The development documentation can be found
+[here](https://morwald.github.io/FourSidedCavityFlow.jl).
