@@ -1,4 +1,4 @@
-println("--- Branch 2 at saddle node: ---")
+println("--- Study branch 2 at saddle node: ---")
 
 # Read results file of continuation as a DataFrame
 df = CSV.read("$foldercont/results.csv", DataFrame)
@@ -30,7 +30,8 @@ println("Arclength continuation of branch 2, ΔRe = $ΔRe, steps = $steps:")
 @time CF.continuation_arclength(foldercont_branch2, Ψi, p, start.Re, ΔRe, steps)
 
 ### Linearstability Branch 2 ### 
-name = "sn_branch2"
+name = "branch2"
+max_steps = 100
 df_branch2 = CSV.read("$foldercont_branch2/results.csv", DataFrame)
 Re_start = 354
 start1, start2 = get_Re_start(df_branch2, Re_start; incr = false)

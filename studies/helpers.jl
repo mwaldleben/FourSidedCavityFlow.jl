@@ -72,7 +72,7 @@ function converge_and_save_asymΨ(foldercont, folderpsis, name, Re, df, p)
     p.params.Re = Re
     Ψ0 = readdlm("$foldercont/psis/psi_step$(@sprintf("%03d", row_cl.step))_Re$(@sprintf("%07.3f", row_cl.Re)).txt")
 
-    Ψ, _, _ = CF.steadystate(Ψ0, p)
+    Ψ, iter, tol = CF.steadystate(Ψ0, p; maxiters=10)
     writedlm("$folderpsis/psi_Re$(@sprintf("%07.3f", Re))_$(name).txt", Ψ)
 
     plt = contourf(reverse(nodes),
@@ -85,10 +85,10 @@ function converge_and_save_asymΨ(foldercont, folderpsis, name, Re, df, p)
         legend = false,
         color = :davos,
         dpi = 800)
-    fileplt = "$folderpsis/psi_Re$(@sprintf("%07.3f", Re))_$(name).png"
+    fileplt = "$folderpsis/psi_Re$(@sprintf("%07.3f", Re))_$(name).pdf"
     savefig(plt, fileplt)
 
-    return nothing
+    return Ψ 
 end
 
 # Helper function to converge to symetric solutions
@@ -114,7 +114,7 @@ function converge_and_save_symΨ(folderpsis, name, Re, p)
         legend = false,
         color = :davos,
         dpi = 300)
-    fileplt = "$folderpsis/psi_Re$(@sprintf("%07.3f", Re))_$(name).png"
+    fileplt = "$folderpsis/psi_Re$(@sprintf("%07.3f", Re))_$(name).pdf"
     savefig(plt, fileplt)
     
     return nothing
@@ -162,4 +162,52 @@ function get_Re_start(df, Re_start; incr = true)
     end
 
     return start1, start2
+end
+
+# Helper function to do stability analysis at point
+function lsa_converged(foldercont, Re, df, p)
+    @unpack n, nodes = p.params
+
+    # Find closest solution to use as initial guess
+    i_cl = argmin(abs.(df.Re .- Re))
+    row_cl = df[i_cl, :]
+
+    Ψ0 = readdlm("$foldercont/psis/psi_step$(@sprintf("%03d", row_cl.step))_Re$(@sprintf("%07.3f", row_cl.Re)).txt")
+
+    p.params.Re = Re
+    display(Re)
+    Ψ, iter, tol = CF.steadystate(Ψ0, p)
+    display(iter)
+    display(tol)
+
+    u = Ψ[3:(n - 1), 3:(n - 1)][:]
+    lambdas = CF.linearstability_lambdas(u, p)
+
+    return lambdas
+end
+
+# Helper function to linearly interpolate two states 
+# of pseudo-arclength continuation based on their eigenvalues
+function interpol(df, idx1, idx2, name_lambda)
+    Re1 = df[idx1, :].Re 
+    Re2 = df[idx2, :].Re 
+
+    λ1 = df[idx1, name_lambda]
+    λ2 = df[idx2, name_lambda]
+
+    Re = Re1 + (abs(λ1)/(abs(λ1) + abs(λ2)))*(Re2 - Re1)
+    
+    return Re
+end
+
+function interpol(df, idx1, idx2, name_lambda, name_interpol)
+    x1 = df[idx1, name_interpol] 
+    x2 = df[idx2, name_interpol] 
+
+    λ1 = df[idx1, name_lambda]
+    λ2 = df[idx2, name_lambda]
+
+    x = x1 + (abs(λ1)/(abs(λ1) + abs(λ2)))*(x2 - x1)
+    
+    return x
 end
