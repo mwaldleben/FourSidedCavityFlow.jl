@@ -1,6 +1,8 @@
-import FourSidedCavityFlow as CF
+import FourSidedCavityFlow
+const CF = FourSidedCavityFlow
+
 using LinearAlgebra
-using DelimitedFiles
+using FileIO
 using Test
 
 include("test_differentiation.jl")

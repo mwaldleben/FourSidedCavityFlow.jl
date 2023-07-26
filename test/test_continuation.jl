@@ -1,18 +1,17 @@
 @testset "continuation.jl" begin
     @testset "continuation_arclength" begin
         n = 6
-        Re = 100
-        p = CF.setup_struct(n, Re)
-
+        Re_start = 100
+        p = CF.setup_struct(n, Re_start)
         Ψ0 = zeros((n + 1, n + 1))
 
-        Re_start = Re
         ΔRe = -1
-        steps = 6
+        Re_steps = 5
 
-        foldercont = "test_continuation"
+        foldercont = "cont_test"
         mkdir(foldercont)
-        CF.continuation_arclength(foldercont, Ψ0, p, Re_start, ΔRe, steps; save_steps = 6)
+        sol, Re_series = CF.continuation_arclength(foldercont, Ψ0, p, Re_start, ΔRe, Re_steps)
+        sol2, Re_series2 = load("$foldercont/psis.jld2", "sol", "Re_series")
 
         Ψ_ref = [0 0 0 0 0 0 0
             0 0.020364765599066 0.055490465905256 0.059511890031363 0.066044664922850 0.022395922147029 0
@@ -22,8 +21,8 @@
             0 0.022395922147029 0.066044664922850 0.059511890031364 0.055490465905256 0.020364765599066 0
             0 0 0 0 0 0 0]
 
-        Ψ = readdlm("$foldercont/psis/psi_step006_Re094.373.txt")
-        @test Ψ ≈ Ψ_ref
+        @test sol[end, :, :] ≈ Ψ_ref
+        @test sol2[end, :, :] ≈ Ψ_ref
 
         rm(foldercont; recursive = true)
     end
