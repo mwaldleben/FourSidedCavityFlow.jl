@@ -152,7 +152,7 @@ function newton1D_for_linearstability(Re0, u0, p::CavityStruct; tolmax = 1e-10,
         end
 
         p.params.Re = Re
-        u, _, _ = newton(f!, u, p)
+        u, _, _ = newton(f!, u, p; abstol = 1e-9, maxiters = 150)
 
         if verbose == true
             @printf("  %-10d %-10.6f %-10.6f %-10.6f\n", iter, Re, fx1, time)

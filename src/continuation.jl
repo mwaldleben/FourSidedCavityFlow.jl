@@ -13,24 +13,28 @@ function continuation_arclength(foldercont, Ψ1, Ψ2, p::CavityStruct, Re1, Re2,
     @inbounds u2 = reshape(Ψ2[3:(n - 1), 3:(n - 1)], (n - 3) * (n - 3))
 
     if lsa == true
-        lambdas = Array{Float64}(undef, (Re_steps + 1, (n + 1)*(n + 1)))
+        lambdas = Array{ComplexF64}(undef, (Re_steps + 1, (n - 3)*(n - 3)))
 
-        lsa_time = @elapsed lambda = linearstability_lambdas(u1, p)
-        lambdas[1, :] = lambda
+        lsa_time = @elapsed lambdas1 = linearstability_lambdas(u1, p)
+        lambdas[1, :] = lambdas1
 
-        lsa_time = @elapsed lambda = linearstability_lambdas(u2, p)
-        lambdas[2, :] = lambda
+        lsa_time = @elapsed lambdas2 = linearstability_lambdas(u2, p)
+        lambdas[2, :] = lambdas2
 
         fileresults = "$(foldercont)/results.csv"
         write_header_lsa(fileresults)
 
-        save_result_lsa(fileresults, Ψ1, 0, lambdas, lsa_time, 0, 0, p)
-        save_result_lsa(fileresults, Ψ2, 1, lambdas, lsa_time, 0, 0, p)
+        p.params.Re = Re1
+        save_result_lsa(fileresults, Ψ1, 0, lambdas1, lsa_time, 0, 0, p)
+        p.params.Re = Re2
+        save_result_lsa(fileresults, Ψ2, 1, lambdas2, lsa_time, 0, 0, p)
     else
         fileresults = "$(foldercont)/results.csv"
         write_header(fileresults)
 
+        p.params.Re = Re1
         save_result(fileresults, Ψ1, 0, 0, 0.0, p)
+        p.params.Re = Re2
         save_result(fileresults, Ψ2, 1, 0, 0.0, p)
     end
 
@@ -72,11 +76,11 @@ function continuation_arclength(foldercont, Ψ1, Ψ2, p::CavityStruct, Re1, Re2,
         sol[i, :, :] = Ψ
 
         if lsa == true
-            lsa_time = @elapsed lambda = linearstability_lambdas(tmp[1:(end - 1)], p)
-            lambdas[i, :] = lambda
+            lsa_time = @elapsed lambdasi = linearstability_lambdas(tmp[1:(end - 1)], p)
+            lambdas[i, :] = lambdasi
 
             save("$foldercont/psis.jld2", "sol", sol[1:i, :, :], "lambdas", lambdas[1:i, :, :], "Re_series", Re_series[1:i])
-            save_result_lsa(fileresults, Ψ, i, lambdas, lsa_time, iter, newton_time, p)
+            save_result_lsa(fileresults, Ψ, i, lambdasi, lsa_time, iter, newton_time, p)
         else
             save("$foldercont/psis.jld2", "sol", sol[1:i, :, :], "Re_series", Re_series[1:i])
             save_result(fileresults, Ψ, i, iter, time, p)
