@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Tutorial · FourSidedCavityFlow.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">FourSidedCavityFlow.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../foursidedcavityflows/">Four-Sided Cavity Flows</a></li><li class="is-active"><a class="tocitem" href>Tutorial</a><ul class="internal"><li><a class="tocitem" href="#Steady-State-Solutions"><span>Steady-State Solutions</span></a></li><li><a class="tocitem" href="#Time-Stepping"><span>Time-Stepping</span></a></li><li><a class="tocitem" href="#Pseudo-Arclength-Continuation"><span>Pseudo-Arclength Continuation</span></a></li><li><a class="tocitem" href="#Linear-Stability-Analysis"><span>Linear Stability Analysis</span></a></li></ul></li><li><a class="tocitem" href="../reproducibility/">Reproduce Results</a></li><li><a class="tocitem" href="../api/">API of Functions</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Tutorial</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Tutorial</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/morwald/FourSidedCavityFlow.jl/blob/main/docs/src/tutorial.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Tutorial"><a class="docs-heading-anchor" href="#Tutorial">Tutorial</a><a id="Tutorial-1"></a><a class="docs-heading-anchor-permalink" href="#Tutorial" title="Permalink"></a></h1><p>To set up the four-sided cavity flow problem in Julia, instantiate the <code>struct p</code>, of type CavityStruct, with a Chebyshev polynomial of order <span>$n$</span> and a Reynolds number <span>$\mathrm{Re}$</span>. This generates a grid of size <span>$(n+1)\times(n+1)$</span>, and all the parameters and cache variables needed to run the simulations. To illustrate, <span>$n = 32$</span> is used, which is too small for accurate computations but enough to show how the module works.</p><pre><code class="language-julia hljs">using FourSidedCavityFlow 
+const CF = FourSidedCavityFlow
+
+n = 32;
+Re = 1;
+p = CF.setup_struct(n, Re);</code></pre><h2 id="Steady-State-Solutions"><a class="docs-heading-anchor" href="#Steady-State-Solutions">Steady-State Solutions</a><a id="Steady-State-Solutions-1"></a><a class="docs-heading-anchor-permalink" href="#Steady-State-Solutions" title="Permalink"></a></h2><p>We can run the <code>steadystate</code> function for a given Reynolds number <span>$\mathrm{Re}$</span> to converge to a steady-state solution with Newton&#39;s method. For example the symmetric base solution for a Reynolds of <span>$\mathrm{Re} = 50$</span> can be computed by setting the streamfunction matrix to zeros as an initial guess.</p><pre><code class="language-julia hljs">p.params.Re = 50;
+Ψ0 = zeros((n + 1), (n + 1));
+
+Ψ, iter, tol = CF.steadystate(Ψ0, p);</code></pre><p>The results can be visualized in the physical domain by transposing the <span>$\Psi$</span> matrix and mirror the solution at the y axis. </p><pre><code class="language-julia hljs">using Plots
+
+contourf(reverse(p.params.nodes), reverse(p.params.nodes), Ψ&#39;, xlim = (-1, 1), 
+    ylim = (-1, 1), aspect_ratio = 1, axis = ([], false), color = :davos)</code></pre><p><img src="../assets/psi_Re50.svg" alt/></p><h2 id="Time-Stepping"><a class="docs-heading-anchor" href="#Time-Stepping">Time-Stepping</a><a id="Time-Stepping-1"></a><a class="docs-heading-anchor-permalink" href="#Time-Stepping" title="Permalink"></a></h2><p>The asymmetric solutions can be computed by doing time integration.</p><pre><code class="language-julia hljs">p.params.Re = 100;
+timesteps = 140;
+h = 1;
+Ψi = -1e-3 * abs.(randn((n + 1), (n + 1)));
+
+sol, timeseries = CF.timestepping(Ψi, p, h, timesteps, savesteps = true, verbose = true);
+
+contourf(reverse(p.params.nodes), reverse(p.params.nodes), sol[end, :, :]&#39;; xlim = (-1, 1), 
+   ylim = (-1, 1), aspect_ratio = 1, axis = ([], false), color = :davos)
+
+plot(timeseries, sol[:, p.params.ic, p.params.ic]; xlabel = &quot;time&quot;, ylabel = &quot;Ψcenter&quot;, label = false)</code></pre><p><img src="../assets/psi_Re100.svg" alt/> <img src="../assets/timesteps_Re100.svg" alt/></p><h2 id="Pseudo-Arclength-Continuation"><a class="docs-heading-anchor" href="#Pseudo-Arclength-Continuation">Pseudo-Arclength Continuation</a><a id="Pseudo-Arclength-Continuation-1"></a><a class="docs-heading-anchor-permalink" href="#Pseudo-Arclength-Continuation" title="Permalink"></a></h2><p>We can continue the asymmetric solution branch as a function of the Reynolds number. The obtained solution of the time-stepping above will be converged with the steady-state function. Then the continuation algorithm is started from this Reynolds number. Here a <span>$\Delta \mathrm{Re} = 1$</span> is chosen.</p><pre><code class="language-julia hljs">Re_start = 100;
+p.params.Re = Re_start;
+Ψs, iter, tol = CF.steadystate(sol[end, :, :], p);
+
+ΔRe = 1;
+Re_steps = 200; # as a test
+#Re_steps = 840; # steps needed to capture the complete curve
+
+foldercont = &quot;cont&quot;;
+mkdir(foldercont);
+sol_cont, Re_series = CF.continuation_arclength(foldercont, Ψs, p, Re_start, ΔRe, Re_steps);</code></pre><p>The streamfunction at the different Reynolds steps of the continuation is saved in the predefined folder <code>foldercont</code> (as binaries, JLD2 format) and as well returned from the function call. A CSV file called <code>results.csv</code> contains a summary of the computed steps. The summary can be visualized as follows:</p><pre><code class="language-julia hljs">using CSV
+using DataFrames
+
+df = CSV.read(&quot;$foldercont/results.csv&quot;, DataFrame)</code></pre><p>Let us plot the center value of the streamfunction as a function of the Reynolds number in a bifurcation diagram.</p><pre><code class="language-julia hljs">plot(df.Re, df.psi_c; xlabel = &quot;Re&quot;, ylabel = &quot;Ψcenter&quot;, label = false)</code></pre><p><img src="../assets/bif_diagram.svg" alt/></p><p>The same can be achieved by using the results stored as binaries or returned from the function call.</p><pre><code class="language-julia hljs">using JLD2
+using FileIO
+
+sol_cont, Re_series = load(&quot;$foldercont/psis.jld2&quot;, &quot;sol&quot;, &quot;Re_series&quot;);
+
+plot(Re_series, sol_cont[:, p.params.ic, p.params.ic]; xlabel = &quot;Re&quot;, ylabel = &quot;Ψcenter&quot;, label = false)</code></pre><h2 id="Linear-Stability-Analysis"><a class="docs-heading-anchor" href="#Linear-Stability-Analysis">Linear Stability Analysis</a><a id="Linear-Stability-Analysis-1"></a><a class="docs-heading-anchor-permalink" href="#Linear-Stability-Analysis" title="Permalink"></a></h2><p>A linear stability analysis can be performed within the continuation algorithm by setting the keyword argument <code>lsa = true</code>. Let us compute eigenvalue crossings around the Hopf bifurcation. The already computed asymmetric solutions can be used from the continuation algorithm before.</p><pre><code class="language-julia hljs">Re_start = 347;
+p.params.Re = Re_start;
+
+df_upper = filter(row -&gt; row.psi_c &gt; 0.16 || row.psi_c &lt; -0.16 , df);
+idx = argmin(abs.(df_upper.Re .- Re_start));
+row = df_upper[idx, :];
+
+Ψ0 = sol_cont[row.step + 1, :, :] 
+Ψs, iter, tol = CF.steadystate(Ψ0, p);
+
+ΔRe = 0.5;
+Re_steps = 5;
+folderlsa = &quot;lsa_hopf&quot;;
+mkdir(folderlsa);
+sol_lsa, lambdas, Re_series = CF.continuation_arclength(folderlsa, Ψs, p, Re_start, ΔRe,
+                                Re_steps, lsa = true);</code></pre><p>Now, as an example, the two largest eigenvalues, corresponding to complex conjugate pair of the Hopf bifurcation, can be plotted by using the generated CSV file of the linear stability analysis.</p><pre><code class="language-julia hljs">df_lsa = CSV.read(&quot;$folderlsa/results.csv&quot;, DataFrame)
+
+plot(df_lsa.Re, df_lsa.lambda1re; xlabel = &quot;Re&quot;, ylabel = &quot;Real(λ)&quot;, marker = :x, 
+    label = &quot;λ1&quot;)
+plot!(df_lsa.Re, df_lsa.lambda2re; marker = :+, label = &quot;λ2&quot;)</code></pre><p><img src="../assets/lsa_hopf.svg" alt/></p><p>We can see how the real part of the complex conjugate pair of the leading eigenvalues becomes positive at a Reynolds of around <span>$348.2$</span>. </p><p>Another possibility is to use the <code>linearstability</code> function to compute the eigenvalues of already computed states. For example, the crossings of the first pitchfork bifurcation</p><pre><code class="language-julia hljs">Re_series = [65.9, 66.0, 66.1, 66.2, 66.3];
+lambdas = Array{ComplexF64}(undef, (5, (n - 3)*(n - 3)));
+
+Ψ0 = zeros((n + 1), (n + 1));
+
+for (i, Re) in enumerate(Re_series)
+    p.params.Re = Re;
+    Ψ, iter, tol = CF.steadystate(Ψ0, p);
+    u = reshape(Ψ[3:(n - 1), 3:(n - 1)], (n - 3) * (n - 3));
+
+    lambdas[i, :] = CF.linearstability_lambdas(u, p);
+end
+
+plot(Re_series, real(lambdas[:, 1]); xlabel = &quot;Re&quot;, ylabel = &quot;Real(λ1)&quot;, marker = :x, 
+    label = &quot;λ1&quot;)</code></pre><p><img src="../assets/lsa_p1.svg" alt/></p><p>The first pitchfork bifurcation is located at around <span>$\mathrm{Re} = 66.2$</span>. The bifurcation point can be resolved more precisely by using a 1D newton to find the exact Reynolds number for the pitchfork. But this procedure just works if the Jacobian is well-condition at the bifurcation point.</p><pre><code class="language-julia hljs">Re = 66.15;
+p.params.Re = Re;
+
+Ψ, iter, tol = CF.steadystate(Ψ0, p);
+u = reshape(Ψ[3:(n - 1), 3:(n - 1)], (n - 3) * (n - 3));
+
+Re_p1, u_p1, iter, tol = CF.newton1D_for_linearstability(Re, u, p);
+display(Re_p1)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../foursidedcavityflows/">« Four-Sided Cavity Flows</a><a class="docs-footer-nextpage" href="../reproducibility/">Reproduce Results »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Thursday 27 July 2023 08:16">Thursday 27 July 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
