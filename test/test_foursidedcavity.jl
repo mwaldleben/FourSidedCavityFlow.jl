@@ -19,7 +19,6 @@
         @test p.params.D1 ≈ D1_ref
     end
     @testset "constructBC!" begin
-        # Test boundary reconstruction of Ψ when imposing derivatives at boundary
         Ψf(x, y) = @. sin(π * (x - 1) / 2) * sin(π * (y - 1) / 2)
         DΨx(x, y) = @. π / 2 * cos(π * (x - 1) / 2) * sin(π * (y - 1) / 2)
         DΨy(x, y) = @. π / 2 * sin(π * (x - 1) / 2) * cos(π * (y - 1) / 2)
@@ -73,8 +72,6 @@
         @test Ψ ≈ Ψref
     end
     @testset "f!" begin
-        # Test right-hand-side function of equation for streamfunction 
-        # in cavity flow
         n = 6
         Re = 100
         p = CF.setup_struct(n, Re)
@@ -98,8 +95,6 @@
         @test fu ≈ fu_ref
     end
     @testset "ftime!" begin
-        # Test right-hand-side function with time stepping of equation for streamfunction 
-        # in cavity flow
         n = 6
         Re = 100
         p = CF.setup_struct(n, Re)

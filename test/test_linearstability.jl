@@ -1,6 +1,5 @@
 @testset "linearstability.jl" begin
     @testset "f_linearstability" begin
-        # Test nonlinear operator of generalized eigenvalue problem
         n = 6
         Re = 100
         p = CF.setup_struct(n, Re)
@@ -29,7 +28,6 @@
         @test fu ≈ fu_ref
     end
     @testset "linearstability_matrices!" begin
-        # Test creation of matrices A, B for the generalized eigenvalue problem
         n = 6
         Re = 100
         p = CF.setup_struct(n, Re)
@@ -65,7 +63,6 @@
         @test B ≈ Bref
     end
     @testset "linearstability_lambdas! and linearstability_lambdamax" begin
-        # Test creation of matrices A, B for the generalized eigenvalue problem
         n = 6
         Re = 100
         p = CF.setup_struct(n, Re)
