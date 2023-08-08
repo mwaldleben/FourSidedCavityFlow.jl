@@ -1,5 +1,3 @@
-# API
-
 ```@autodocs
 Modules = [FourSidedCavityFlow]
 ```

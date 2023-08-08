@@ -1,4 +1,4 @@
-# Tutorial
+# Examples 
 
 To set up the four-sided cavity flow problem in Julia, instantiate the `struct
 p`, of type CavityStruct, with a Chebyshev polynomial of order $n$ and a
@@ -29,7 +29,7 @@ p.params.Re = 50;
 ```
 
 The results can be visualized in the physical domain by transposing the $\Psi$
-matrix and mirror the solution at the y axis. 
+matrix and mirror the solution at the $y$ axis. 
 ```julia
 using Plots
 

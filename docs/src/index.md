@@ -23,7 +23,7 @@ cavity for incompressible fluids to be used as a validator benchmark for
 Navier-Stokes solvers. The regularization overcomes the corner singularities
 which are due to the discontinuous boundary conditions. The considered method
 recovers exponential convergence with a pseudo-spectral Chebyshev
-discretization scheme. Below the regularization function is shown.  
+discretization scheme.  
 
 ## Installation
 

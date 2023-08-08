@@ -7,10 +7,9 @@ makedocs(;
     sitename = "FourSidedCavityFlow.jl",
     modules = [FourSidedCavityFlow],
     pages = ["Home" => "index.md",
-                "Four-Sided Cavity Flows" => "foursidedcavityflows.md",
-                "Tutorial" => "tutorial.md",
+                "Examples" => "examples.md",
                 "Reproduce Results" => "reproducibility.md",
-                "API of Functions" => "api.md",
+                "Available Functions" => "functions.md",
             ],
     format = Documenter.HTML(
             prettyurls = get(ENV, "CI", nothing) == "true"
