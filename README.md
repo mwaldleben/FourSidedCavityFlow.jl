@@ -1,8 +1,8 @@
 # FourSidedCavityFlow.jl
 
 Development of a Navier-Stokes benchmark solver for the four-sided cavity flow
-using spectral methods. The package is designed to provide a reproducable
-example to compare discretizations and boundary conditions. 
+using spectral methods. The package is designed to provide a reproducible
+example of the problem. 
 
 [![Documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://morwald.github.io/FourSidedCavityFlow.jl)
 [![Build Status](https://github.com/morwald/FourSidedCavityFlow.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/morwald/FourSidedCavityFlow.jl/actions/workflows/CI.yml?query=branch%3Amain)
@@ -10,16 +10,15 @@ example to compare discretizations and boundary conditions.
 
 <img src="./cavity.png" width="280" height="280">
 
-This project aims at developing a set of numerical
-algorithms for the study of the dynamics, linear stability, and
-bifurcations arising in the four-sided cavity flow. This problem has
-recently been vindicated as an ideal benchmark problem for testing the
-accuracy and reliability of Navier-Stokes solvers. The flows arising
-in this problem exhibit all kinds of fundamental bifurcations (local
-and global), such as pitchfork, fold, Hopf, and homoclinic, some of
-them subcritical. These bifurcations seem to take place for low or
-moderate Reynolds numbers, thus alleviating the spatial resolution
-required to obtain accurate results.
+This project aims at developing a set of numerical algorithms for the study of
+the dynamics, linear stability, and bifurcations arising in the regularized
+four-sided cavity flow. This problem has recently been vindicated as an ideal
+benchmark problem for testing the accuracy and reliability of Navier-Stokes
+solvers. The flows arising in this problem exhibit all kinds of fundamental
+bifurcations, such as pitchfork, fold, Hopf, and homoclinic, some of them
+subcritical. These bifurcations take place for low or moderate Reynolds
+numbers, thus alleviating the spatial resolution required to obtain accurate
+results.
 
 ## Installation
 
@@ -31,7 +30,7 @@ the simulations.
 
 ### For development
 
-The Julia module is not yet a registered package. To work on the development
+The Julia module is not a registered package. To work on the development
 version clone this git repository. Navigate to the root directory and start the
 Julia REPL. 
 ```bash
