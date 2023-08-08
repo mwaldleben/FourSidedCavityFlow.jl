@@ -103,8 +103,8 @@
         Re, iter, tol = CF.newton1D_for_linearstability(Re0,
             u0,
             p;
-            tolmax = 1e-8,
-            maxiter = 20)
+            abstol = 1e-8,
+            maxiters = 20)
 
         Re_ref = 68.943470270431973
 
