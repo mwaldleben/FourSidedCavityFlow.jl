@@ -1,3 +1,10 @@
+"""
+    f_linearstability!(fu, Ψ, Ψ0, p)
+
+Computes the for a given solution Ψ0 and the eigenfunction Ψ. This function calculates
+the elements of the matrix ``A`` generalized eigenvalue problem. Stores the solution  
+in `fu`.
+"""
 function f_linearstability!(fu, Ψ, Ψ0, p::CavityStruct)
     @unpack Re, n, D1, D2, D4 = p.params
     @unpack fΨ, D2Ψ, ΨD2, D4Ψ, ΨD4, laplΨ, biharmΨ = p.cache
@@ -50,6 +57,11 @@ function f_linearstability!(fu, Ψ, Ψ0, p::CavityStruct)
     return nothing
 end
 
+"""
+    f_linearstability!(fu, Ψ, Ψ0, p)
+
+Computes the matrices `A` and `B` of the linear stability around a base state `u`.  
+"""
 function linearstability_matrices!(A, B, u, p::CavityStruct)
     @unpack Re, n, D2 = p.params
     @unpack D2Ψ, ΨD2, laplΨ = p.cache
@@ -77,7 +89,12 @@ function linearstability_matrices!(A, B, u, p::CavityStruct)
     return nothing
 end
 
-function linearstability_lambdas(u, p)
+"""
+    linearstability_lambdas(u, p)
+
+Computes the eigenvalues of the linear stability around a base state `u`. 
+"""
+function linearstability_lambdas(u, p::CavityStruct)
     @unpack Re, n = p.params
 
     dim = (n - 3) * (n - 3)
@@ -93,6 +110,11 @@ function linearstability_lambdas(u, p)
     return lambdas
 end
 
+"""
+    linearstability_lambdamax(Re, u, p)
+
+Computes the real part of the rightmost eigenvalues of the linear stability around a base state `u` and a Reynolds number `Re`. 
+"""
 function linearstability_lambdamax(Re, u, p::CavityStruct)
     @unpack n = p.params
 
@@ -109,8 +131,14 @@ function linearstability_lambdamax(Re, u, p::CavityStruct)
     return λmax
 end
 
-function newton1D_for_linearstability(Re0, u0, p::CavityStruct; tolmax = 1e-10,
-    maxiter = 20, verbose = false)
+"""
+    Re, u, iter, tol = newton1D_for_linearstability(Re0, u0, p; abstol = 1e-10, maxiters = 20, verbose = false)
+
+    1D Newton to calculates the Reynolds number `Re` where the rightmost eigenvalues real part is 0. `u0` is the initial guess where
+    for the bifurcation. It only works if the state where the bifurcation is has a well-conditioned Jacobian.    
+"""
+function newton1D_for_linearstability(Re0, u0, p::CavityStruct; abstol = 1e-10,
+    maxiters = 20, verbose = false)
     @unpack n, scl = p.params
 
     Re = Re0
@@ -125,7 +153,7 @@ function newton1D_for_linearstability(Re0, u0, p::CavityStruct; tolmax = 1e-10,
         @printf("  %-10s %-10s %-10s %-10s\n", "Newtonstep", "Re", "lambda_max", "Time[s]")
     end
 
-    while tol > tolmax && iter < maxiter
+    while tol > abstol && iter < maxiters
         time = @elapsed begin
             # Refine solution for new Reynolds number
             p.params.Re = Re

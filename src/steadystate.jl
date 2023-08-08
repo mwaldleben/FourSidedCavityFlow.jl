@@ -1,3 +1,10 @@
+"""
+    Ψsteady, iter, tol = steady_state(Ψ0, p; abstol = 1e-10, maxiters = 100)
+
+Computes the steady-state solution for the four-sided cavity by employing the Newton algorithm.
+Returns the calculated steady-state solution from a given initial guess `Ψ0` and 
+the number of iterions `iter` and tolerance  `tol` of Newton's method.
+"""
 function steadystate(Ψ0, p::CavityStruct; abstol = 1e-10, maxiters = 100)
     @unpack n = p.params
 

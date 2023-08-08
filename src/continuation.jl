@@ -1,3 +1,21 @@
+"""
+    continuation_arclength(foldercont, Ψ1, Ψ2, p::CavityStruct, Re1, Re2, Re_steps; lsa = false)
+
+Arc-length continuation algorithm, which starts with two initial states. It is possible to turn        
+on linear stability analysis at every continuation step. The `Ψ` states are saved
+in a binary format in the destination folder. A file called `results.csv` gives an overview
+of the computed continuation steps.
+
+# Arguments
+- `foldercont::String`: Destination folder for the continuation 
+- `Ψ1::Matrix`: First streamfunction solution for the streamfunction to start continuation  
+- `Ψ2::Matrix`: Second streamfunction solution for the streamfunction to start continuation  
+- `Re1::Real`: Reynolds number of first solution 
+- `Re2::Real`: Reynolds number of second solution 
+- `Re_step::Integer`: Number of continuation steps 
+- `timesteps:Integer`: Number of timesteps
+- `lsa::Bool=false`: If true a linear stability at every continuation step is performed
+"""
 function continuation_arclength(foldercont, Ψ1, Ψ2, p::CavityStruct, Re1, Re2, Re_steps; lsa = false)
     @unpack n, scl = p.params
 
@@ -94,6 +112,22 @@ function continuation_arclength(foldercont, Ψ1, Ψ2, p::CavityStruct, Re1, Re2,
     end
 end
 
+"""
+    continuation_arclength(foldercont, Ψi, p, Re_start, ΔRe, Re_steps; lsa = false)
+
+Arc-length continuation algorithm, which starts with one initial states. The first
+continuation is performed by doing a natural continuation step. The `Ψ` states are saved
+in a binary format in the destination folder. A file called `results.csv` gives an overview
+of the computed continuation steps.
+
+# Arguments
+- `foldercont::String`: Destination folder for the continuation 
+- `Ψi::Matrix`: Streamfunction solution for the streamfunction to start continuation  
+- `Re_start::Real`: Reynolds number of start solution 
+- `ΔRe::Real`: Inital step in Reynolds 
+- `Re_step::Integer`: Number of continuation steps 
+- `lsa::Bool=false`: If true a linear stabilility at every continuaiton step is performed
+"""
 function continuation_arclength(foldercont, Ψi, p::CavityStruct, Re_start, ΔRe, Re_steps; lsa = false)
     @unpack n = p.params
 

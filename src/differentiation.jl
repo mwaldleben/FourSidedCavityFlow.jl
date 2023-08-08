@@ -1,8 +1,8 @@
 """
     diff_chebyshev(n)
 
-Compute the Chebyshev differentiation matrix with `n`+1 points in the
-[1, -1]. Returns a vector of nodes and the matrices for the first,
+Compute the Chebyshev differentiation matrix with `n + 1` points in the
+`[1, -1]`. Returns a vector of nodes and the matrices for the first,
 second and fourth derivatives.
 """
 function diff_chebyshev(n::Int)

@@ -1,3 +1,17 @@
+"""
+    Ψi = timestepping(Ψinit, p, h, timesteps; savesteps = false, verbose = false)
+
+Timestepping of the equation of motion starting with an initial solution `Ψinit` and then perfoms a specified
+number of timesteps using the implicit Euler scheme.
+
+# Arguments
+- `Ψinit::Matrix`: Initial streamfunction field to start time-integration 
+- `p::CavityStruct`: Parameters and cache for the problem. 
+- `h::Real`: Timestep size 
+- `timesteps:Integer`: Number of timesteps
+- `savesteps::Bool=false`: If false only returns the solution of the last timesteps, if true a solution vector of all timesteps and the timeseries
+- `verbose::Bool=false`: If true prints information of the state at each timesteps
+"""
 function timestepping(Ψinit, p::CavityStruct, h, timesteps; savesteps = false, verbose = false)
     @unpack n, ic, Ψi = p.params
     @unpack Ψ = p.cache
