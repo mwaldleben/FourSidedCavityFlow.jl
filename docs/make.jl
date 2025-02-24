@@ -16,4 +16,4 @@ makedocs(;
         )
     )
 
-deploydocs(; repo = "github.com/morwald/FourSidedCavityFlow.jl.git")
+deploydocs(; repo = "github.com/mwaldleben/FourSidedCavityFlow.jl.git")

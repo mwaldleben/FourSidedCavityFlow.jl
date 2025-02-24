@@ -4,9 +4,9 @@ Development of a Navier-Stokes benchmark solver for the four-sided cavity flow
 using spectral methods. The package is designed to provide a reproducible
 example of the problem. 
 
-[![Documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://morwald.github.io/FourSidedCavityFlow.jl)
-[![Build Status](https://github.com/morwald/FourSidedCavityFlow.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/morwald/FourSidedCavityFlow.jl/actions/workflows/CI.yml?query=branch%3Amain)
-[![Coverage](https://codecov.io/gh/morwald/FourSidedCavityFlow.jl/branch/main/graph/badge.svg?token=ZLZMNKQSU2)](https://codecov.io/gh/morwald/FourSidedCavityFlow.jl)
+[![Documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://mwaldleben.github.io/FourSidedCavityFlow.jl)
+[![Build Status](https://github.com/mwaldleben/FourSidedCavityFlow.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/mwaldleben/FourSidedCavityFlow.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![Coverage](https://codecov.io/gh/mwaldleben/FourSidedCavityFlow.jl/branch/main/graph/badge.svg?token=ZLZMNKQSU2)](https://codecov.io/gh/mwaldleben/FourSidedCavityFlow.jl)
 
 <img src="./cavity.png" width="280" height="280">
 
@@ -34,7 +34,7 @@ The Julia module is not a registered package. To work on the development
 version clone this git repository. Navigate to the root directory and start the
 Julia REPL. 
 ```bash
-git clone https://github.com/morwald/FourSidedCavityFlow.jl.git
+git clone https://github.com/mwaldleben/FourSidedCavityFlow.jl.git
 cd FourSidedCavityFlow.jl
 julia
 ```
@@ -54,4 +54,4 @@ pkg>test
 ## Documentation
 
 The development documentation can be found
-[here](https://morwald.github.io/FourSidedCavityFlow.jl).
+[here](https://mwaldleben.github.io/FourSidedCavityFlow.jl).

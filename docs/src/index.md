@@ -30,7 +30,7 @@ discretization scheme.
 This module is not a registered package. To install the FourSidedCavityFlow.jl, 
 run the following commands in your shell.
 ```bash
-git clone https://github.com/morwald/FourSidedCavityFlow.jl.git
+git clone https://github.com/mwaldleben/FourSidedCavityFlow.jl.git
 cd FourSidedCavityFlow.jl
 julia
 ```
