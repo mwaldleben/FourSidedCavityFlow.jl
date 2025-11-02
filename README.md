@@ -59,7 +59,7 @@ The development documentation can be found
 ## Credits
 
 This code has been developed in the context of a master thesis
-([PDF](docs/masterthesis.pdf)) conducted under the supervision of Álvoro
+([PDF](docs/masterthesis.pdf)) conducted under the supervision of Álvaro
 Meseguer in the Group of Nonlinear Fluid Dynamics at Universitat Politècnica de
 Catalunya (UPC).
 
