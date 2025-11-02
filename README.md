@@ -56,6 +56,13 @@ pkg>test
 The development documentation can be found
 [here](https://mwaldleben.github.io/FourSidedCavityFlow.jl).
 
+## Credits
+
+This code has been developed in the context of a master thesis
+([PDF](docs/masterthesis.pdf)) conducted under the supervision of Álvoro
+Meseguer in the Group of Nonlinear Fluid Dynamics at Universitat Politècnica de
+Catalunya (UPC).
+
 ## Grant
 
 COMPUTACION DE ALTO RENDIMIENTO DE ESTRUCTURAS HIDRODINAMICAS 
